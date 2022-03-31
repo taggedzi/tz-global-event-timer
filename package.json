@@ -1,0 +1,11 @@
+{
+  "name": "tz-event-timer",
+  "version": "1.0.0",
+  "description": "A web based event timer to show time in visitors time zone.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matthew Craig",
+  "license": "ISC"
+}
