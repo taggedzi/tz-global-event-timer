@@ -15,14 +15,14 @@ function getEventTime(localTimeString) {
     return new Date(localTimeString).toUTCString();
 }
 
-
 function constructUrl(queryParameters = {}){
     let sp = new URLSearchParams(queryParameters);
-    const uri = `${location.protocol}//${location.host}:${location.port}${location.pathname}?${sp.toString()}`
+    const uri = `${location.protocol}//${location.host}${location.pathname}?${sp.toString()}`
     return uri
 }
 
 const newEventButton = document.getElementById('create')
+const clientOffset = document.getElementById('clientOffset')
 newEventButton.addEventListener('click', function(event) {
     const eventTimeEl = document.getElementById('newEvent')
     if (eventTimeEl.value !== '') {
@@ -31,14 +31,19 @@ newEventButton.addEventListener('click', function(event) {
             'date': eventUtcTime
         }
         let url = constructUrl(queryParams)
-
-        console.log({
-            eventUtcTime,
-            queryParams,
-            url
-        })
-        // clientOffset.value = utcTime.toUTCString()
+        clientOffset.value = url
     } else {
         throw new Error('Must select a date/time for an event.')
     }
 })
+
+const queryString = window.location.search;
+const currentEventEl = document.getElementById('existingEvent')
+if (queryString) {
+    let searchParams = new URLSearchParams(queryString)
+    let date = ''
+    if (searchParams.has('date')) {
+        date = new Date(searchParams.get('date'))
+    }
+    currentEventEl.value = date
+}
