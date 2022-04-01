@@ -2,7 +2,6 @@ require("flatpickr/dist/themes/dark.css")
 import flatpickr from "flatpickr"
 import '../css/main.css'
 import '../css/flip.css'
-import '../js/flip.js'
 
 const tzEventTimer = () => {
     flatpickr('#newEvent', {

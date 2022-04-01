@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <h1><%= htmlWebpackPlugin.options.title %></h1>
+    <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
     <div id="existingEventTimer">
         <h2 id="eventDesc"></h2>
         <div id="countdown">
@@ -29,8 +29,10 @@
         <h2>Create your own event!</h2>
         <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly">
         <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
-        <button id="create">Create Event Link</button>
         <div id="notes">* event description is limited to 75 characters</div>
+        <br>
+        <button id="create">Create Event Link</button>
+        
     </div>
 
     <div id="link"></div>
