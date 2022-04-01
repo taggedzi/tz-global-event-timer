@@ -11,14 +11,28 @@
 </head>
 <body>
     <h1><%= htmlWebpackPlugin.options.title %></h1>
-    <div id="newEventContainer">
-        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date.." readonly="readonly"><button id="create">Create Event Link</button>
-    </div>
     <div id="existingEventTimer">
-        <input id="existingEvent" name="existingEvent" placeholder="No Events Scheduled." readonly="readonly">
+        <h2 id="eventDesc"></h2>
+        <div id="countdown">
+            <ul>
+              <li><span id="days"></span>days</li>
+              <li><span id="hours"></span>Hours</li>
+              <li><span id="minutes"></span>Minutes</li>
+              <li><span id="seconds"></span>Seconds</li>
+            </ul>
+          </div>
+          <h2 id="existingEventHeader"></h2>
+          <div id="existingEventTime"></div>
     </div>
-    <div id="info">
-        Client Offset <input type="text" id="clientOffset" readonly="readonly">
+    <br>
+    <div id="newEventContainer">
+        <h2>Create your own event!</h2>
+        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly">
+        <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
+        <button id="create">Create Event Link</button>
+        <div id="notes">* event description is limited to 75 characters</div>
     </div>
+
+    <div id="link"></div>
 </body>
 </html>
