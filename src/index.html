@@ -26,18 +26,25 @@
     <br>
     <div id="newEventContainer">
         <h2>Create your own event!</h2>
-        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly"><br>
+        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly">
         <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
-        <div id="notes">* Please keep description short. (for your sake)</div>
-        <br>
         <button id="create">Create Event Link</button>
     </div>
     <div id="linkContainer">
         <h2>Here is your link!</h2>
         <div id="link"></div>
         <button id="copyUrl">&#128203; Copy to clipboard</button>
-        <p>How to use: Copy this link and distribute to friends. When the visit the link it will convert your event to
-            their computers time zone so they know when you intend to have your event.</p>
+    </div>
+    <div id="help">
+        <p>How to use:</p>
+        <ol>
+            <li>Pick a Date/Time and optionally give a breif name for the event.</li>
+            <li>Click the "Create Event Link" button.</li>
+            <li>You will be presented with a URL link.</li>
+            <li>Copy this link and distribute to friends.</li>
+        </ol> 
+        <p>When anyone visits the link it will convert your events time
+            to the local time zone of their device.</p>
     </div>
 </body>
 </html>
