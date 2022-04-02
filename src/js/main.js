@@ -1,10 +1,7 @@
 require("flatpickr/dist/themes/dark.css")
 import flatpickr from "flatpickr"
 import '../css/main.css'
-import '../css/flip.css'
 
-// Used Pre-backed date-time picker from Matt Smith. 
-// https://codepen.io/AllThingsSmitty/pen/JJavZN
 const tzEventTimer = () => {
     flatpickr('#newEvent', {
         enableTime: true,

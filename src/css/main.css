@@ -1,21 +1,64 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
 body {
+    margin: 0;
+    min-width: 550px;
+}
+
+br {
+    display:block;
+}
+
+body {
+    align-items: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     font-size: 16px;
+}
+
+.container {
+    color: #333;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h1 {
+    font-weight: normal;
+    letter-spacing: 0.125rem;
+    text-transform: uppercase;
+}
+
+li {
+    display: inline-block;
+    font-size: 1.5em;
+    list-style-type: none;
+    padding: 1em;
+    text-transform: uppercase;
+}
+
+li span {
+    display: block;
+    font-size: 4.5rem;
 }
 
 #headline {
     padding: 10px;
 }
+
 #info {
     padding: 12px;
 }
+
 #notes {
     color: black;
 }
-a,
-a:visited,
-a:hover {
+
+a a:visited a:hover {
     color: black;
 }
 
@@ -58,17 +101,21 @@ button {
     padding-top: 10px;
     padding-left: 10px;
 }
+
 #existingEventTime {
     padding-bottom: 10px;
     padding-left: 10px;
 }
+
 #newEventContainer {
     padding: 10px;
 }
+
 #linkContainer {
     padding: 10px;
     display: none;
 }
+
 #link {
     padding: 10px;
 }
