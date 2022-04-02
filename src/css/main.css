@@ -13,6 +13,11 @@ body {
 #notes {
     color: black;
 }
+a,
+a:visited,
+a:hover {
+    color: black;
+}
 
 input {
     height: 41px;
@@ -57,5 +62,12 @@ button {
     padding-left: 10px;
 }
 #newEventContainer {
+    padding: 10px;
+}
+#linkContainer {
+    padding: 10px;
+    display: none;
+}
+#link {
     padding: 10px;
 }

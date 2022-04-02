@@ -22,7 +22,14 @@ function constructUrl(queryParameters = {}){
     return uri
 }
 
+function copyTextToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('copied')
+    });
+}
+
 const newEventButton = document.getElementById('create')
+let url = ''
 newEventButton.addEventListener('click', function(event) {
     const eventTimeEl = document.getElementById('newEvent')
     if (eventTimeEl.value !== '') {
@@ -32,12 +39,21 @@ newEventButton.addEventListener('click', function(event) {
             'date': eventUtcTime,
             'desc': eventDescription
         }
-        let url = constructUrl(queryParams)
-        document.getElementById('link').innerHTML = `<a href="${url}">${url}</a>`
+        url = constructUrl(queryParams)
+        let linkEl = document.getElementById('link')
+        linkEl.innerHTML = `<a href="${url}">${url}</a>`
+        linkEl.dataset.link = url;
+        document.getElementById('linkContainer').style.display = 'block';
     } else {
         throw new Error('Must select a date/time for an event.')
     }
 })
+
+const copyUrlButton = document.getElementById('copyUrl')
+copyUrlButton.addEventListener('click', function(event) {
+    navigator.clipboard.writeText(document.getElementById('link').dataset.link)
+})
+
 
 const queryString = window.location.search;
 if (queryString) {
@@ -58,8 +74,8 @@ if (queryString) {
         hour = minute * 60,
         day = hour * 24;
 
-    const countDown = new Date(date).getTime(),
-        x = setInterval(function () {
+    const countDown = new Date(date).getTime()
+    const cntr = setInterval(function () {
 
             const now = new Date().getTime(),
                 distance = countDown - now;
@@ -71,11 +87,11 @@ if (queryString) {
 
             //do something later when date is reached
             if (distance < 0) {
-                document.getElementById("headline").innerText = "Event start has passed.";
+                document.getElementById("existingEventHeader").innerText = "Event start has passed.";
                 document.getElementById("countdown").style.display = "none";
-                document.getElementById("content").style.display = "block";
-                clearInterval(x);
+                clearInterval(cntr);
             }
             //seconds
         }, 0)
 }
+
