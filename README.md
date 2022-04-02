@@ -9,4 +9,3 @@ Load the page into a web browser. Select a date/time for the event in your LOCAL
 ## Credits
 
 This is my first project with NodeJS, so thank you to NodeJS, NPM, webpack, and flatpickr. The Date time picker was created by Matt Smith aquired here: https://codepen.io/AllThingsSmitty/pen/JJavZN
-
