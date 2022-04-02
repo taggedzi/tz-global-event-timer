@@ -21,7 +21,7 @@ a:hover {
 
 input {
     height: 41px;
-    width: 60%;
+    width: 550px;
     border-radius: 10px;
     padding: 0;
     padding-left: 5px;
@@ -31,7 +31,7 @@ input {
 
 button {
     height: 45px;
-    width: 35%;
+    width: 550px;
     border-radius: 10px;
     padding: 0;
     font-weight: bold;
@@ -46,6 +46,7 @@ button {
     border-radius: 10px;
     overflow: hidden;
     width: 550px;
+    display: none;
 }
 
 #eventDesc {

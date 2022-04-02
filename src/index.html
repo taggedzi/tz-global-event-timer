@@ -5,9 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <style>
-        
-    </style>
 </head>
 <body>
     <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
@@ -27,14 +24,12 @@
     <br>
     <div id="newEventContainer">
         <h2>Create your own event!</h2>
-        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly">
+        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly"><br>
         <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
         <div id="notes">* event description is limited to 75 characters</div>
         <br>
         <button id="create">Create Event Link</button>
-        
     </div>
-
     <div id="linkContainer">
         <h2>Here is your link!</h2>
         <div id="link"></div>

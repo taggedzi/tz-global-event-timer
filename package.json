@@ -4,14 +4,13 @@
   "description": "A web based event timer to show time in visitors time zone.",
   "main": "index.html",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack --config webpack.dev.js",
+    "prod": "webpack --config webpack.prod.js"
   },
   "author": "Matthew Craig",
   "license": "ISC",
   "dependencies": {
-    "date-and-time": "^2.3.0",
-    "flatpickr": "^4.6.11",
-    "react-datepicker": "^4.7.0"
+    "flatpickr": "^4.6.11"
   },
   "devDependencies": {
     "css-loader": "^6.7.1",
