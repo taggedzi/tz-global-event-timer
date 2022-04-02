@@ -7,11 +7,11 @@
 html,
 body {
     margin: 0;
-    min-width: 550px;
+    min-width: 600px;
 }
 
 br {
-    display:block;
+    display: block;
 }
 
 body {
@@ -19,15 +19,13 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
         Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     font-size: 16px;
+    color: black;
 }
 
-.container {
-    color: #333;
-    margin: 0 auto;
-    text-align: center;
-}
 
-h1 {
+h1,
+h2,
+h3 {
     font-weight: normal;
     letter-spacing: 0.125rem;
     text-transform: uppercase;
@@ -46,25 +44,22 @@ li span {
     font-size: 4.5rem;
 }
 
-#headline {
+#headline,
+#info,
+#link,
+#newEventContainer {
     padding: 10px;
 }
 
-#info {
-    padding: 12px;
-}
-
-#notes {
-    color: black;
-}
-
-a a:visited a:hover {
+a,
+a:visited,
+a:hover {
     color: black;
 }
 
 input {
     height: 41px;
-    width: 550px;
+    width: 600px;
     border-radius: 10px;
     padding: 0;
     padding-left: 5px;
@@ -74,13 +69,11 @@ input {
 
 button {
     height: 45px;
-    width: 550px;
+    width: 600px;
     border-radius: 10px;
     padding: 0;
-    font-weight: bold;
     font-size: 16px;
-    background-color: gray;
-    color: black;
+    background-color: #cbcbcb;
 }
 
 #existingEventTimer {
@@ -88,7 +81,7 @@ button {
     border: 1px solid black;
     border-radius: 10px;
     overflow: hidden;
-    width: 550px;
+    width: 600px;
     display: none;
 }
 
@@ -107,15 +100,13 @@ button {
     padding-left: 10px;
 }
 
-#newEventContainer {
-    padding: 10px;
-}
-
 #linkContainer {
     padding: 10px;
     display: none;
 }
 
-#link {
-    padding: 10px;
+.container {
+    color: #333;
+    margin: 0 auto;
+    text-align: center;
 }

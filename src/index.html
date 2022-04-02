@@ -1,32 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= htmlWebpackPlugin.options.title %></title>
 </head>
+
 <body>
     <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
     <div id="existingEventTimer">
         <h2 id="eventDesc"></h2>
         <div id="countdown">
             <ul>
-              <li><span id="days"></span>days</li>
-              <li><span id="hours"></span>Hours</li>
-              <li><span id="minutes"></span>Minutes</li>
-              <li><span id="seconds"></span>Seconds</li>
+                <li><span id="days"></span>days</li>
+                <li><span id="hours"></span>Hours</li>
+                <li><span id="minutes"></span>Minutes</li>
+                <li><span id="seconds"></span>Seconds</li>
             </ul>
-          </div>
-          <h2 id="existingEventHeader"></h2>
-          <div id="existingEventTime"></div>
+        </div>
+        <h2 id="existingEventHeader"></h2>
+        <div id="existingEventTime"></div>
     </div>
     <br>
     <div id="newEventContainer">
         <h2>Create your own event!</h2>
         <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly"><br>
         <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
-        <div id="notes">* event description is limited to 75 characters</div>
+        <div id="notes">* Please keep description short. (for your sake)</div>
         <br>
         <button id="create">Create Event Link</button>
     </div>
@@ -34,7 +36,8 @@
         <h2>Here is your link!</h2>
         <div id="link"></div>
         <button id="copyUrl">&#128203; Copy to clipboard</button>
-        <p>How to use: Copy this link and distribute to friends. When the visit the link it will convert your event to their computers time zone so they know when you intend to have your event.</p>
+        <p>How to use: Copy this link and distribute to friends. When the visit the link it will convert your event to
+            their computers time zone so they know when you intend to have your event.</p>
     </div>
 </body>
 </html>
