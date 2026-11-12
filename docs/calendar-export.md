@@ -102,3 +102,6 @@ link format already carries the required event data. Update the README's
   [Google Calendar](https://support.google.com/calendar/answer/37118) ·
   [Apple Calendar](https://support.apple.com/en-us/guide/calendar/icl1023/mac) ·
   [Outlook](https://support.microsoft.com/en-us/outlook/import-or-subscribe-to-a-calendar-in-outlook-com-or-outlook-on-the-web)
+
+Google Calendar import was confirmed by the project owner. Apple Calendar and
+Outlook import remain unverified.
