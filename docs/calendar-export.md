@@ -62,8 +62,8 @@ usable.
 Add a small serializer in `src/js/` that takes the event data, export timestamp,
 and UID. Wire it into `showEvent` in `src/js/app.js` and add the button to the
 event actions in `src/index.html`. Use a browser-generated download. The existing
-link format already carries the required event data. Update the README's
-**Viewing and exporting an event** section when the feature ships.
+link format already carries the required event data. Visitor steps for the
+download live in [Using the timer](using-the-timer.md).
 
 ## Acceptance criteria
 

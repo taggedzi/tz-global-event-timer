@@ -1,5 +1,7 @@
 # Contributing
 
+For people changing the code. The tour of the product is the [README](README.md).
+
 Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Install with `npm ci`, then
 `npx playwright install --with-deps chromium`. On Windows, omit --with-deps.
 

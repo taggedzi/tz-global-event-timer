@@ -1,174 +1,160 @@
-# Tz Global Event Timer
+<p align="center">
+  <img src="src/event-timer.svg" width="72" height="72" alt="">
+</p>
+
+<h1 align="center">Tz Global Event Timer</h1>
+
+<p align="center"><strong>One event. Everyone’s local time.</strong></p>
+
+I play games with people all over the world. Picking a start time is the hard part. This site makes one link for the event. Each person who opens it sees that start time on their own clock, plus a countdown.
+
+You can use it for a raid, a meeting, or a get-together. The time travels inside the link.
+
+<p align="center">
 
 [![CI status on main](https://github.com/taggedzi/tz-global-event-timer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/taggedzi/tz-global-event-timer/actions/workflows/ci.yml?query=branch%3Amain)
 [![Stack: JavaScript, HTML, and CSS](https://img.shields.io/badge/stack-JavaScript%20%2F%20HTML%20%2F%20CSS-F7DF1E)](src/)
-[![Development: Node.js 24 or later](https://img.shields.io/badge/development-Node.js%2024%2B-339933)](#development)
-[![Hosting: static site over HTTPS](https://img.shields.io/badge/hosting-static%20HTTPS-2563EB)](#building-and-hosting)
-[![Sharing: QR codes and optional passwords](https://img.shields.io/badge/sharing-QR%20%2B%20optional%20passwords-6D28D9)](#usage)
+[![Development: Node.js 24 or later](https://img.shields.io/badge/development-Node.js%2024%2B-339933)](CONTRIBUTING.md)
+[![Hosting: static site over HTTPS](https://img.shields.io/badge/hosting-static%20HTTPS-2563EB)](docs/hosting.md)
+[![Sharing: QR codes and optional passwords](https://img.shields.io/badge/sharing-QR%20%2B%20optional%20passwords-6D28D9)](#three-ways-to-share)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-This project was created to help manage events in multiple timezones. I play games with people around the world and co-ordinating when things will start is always difficult.  I created this project to make this process easier.
+</p>
 
-## Usage
+| Badge | Who it is for | What it tells you |
+| --- | --- | --- |
+| CI status | People changing the code | Tests on the `main` branch |
+| Stack | People changing the code | The site is JavaScript, HTML, and CSS |
+| Node.js 24+ | People changing the code | Node.js 24 or newer builds the site. The version in [`.nvmrc`](.nvmrc) is 26.13.1 |
+| Static HTTPS | People putting the site online | Upload the built files to a normal website address that starts with `https://` |
+| QR + passwords | Anyone sharing an event | A link, a scannable code, and an optional password |
+| MIT | Anyone | You can use, change, and share the project. Keep the [license](LICENSE) with your copy |
 
-1. Choose an **Event time zone** and enter the **Event date and time** in that zone. Add a description if you like.
-2. Click **Create event link**, then **Copy link** or **Generate QR code**. Visitors see the event in their local time with a countdown.
+---
 
-If the clock moves forward and the selected time does not exist, choose another time. If a time occurs twice when the clock moves back, explicitly choose its first or second occurrence using the displayed UTC offsets. The preview confirms the chosen date, time, zone, and offset.
+## How a link works
 
-### Password protection
+```mermaid
+flowchart LR
+  pick["1. Pick a time zone and a clock time"] --> make["2. Create a link"]
+  make --> send["3. Send the link or a QR code"]
+  send --> open["4. Someone opens it"]
+  open --> see["5. Their browser shows their own local time"]
+```
 
-Fill in **Protect with a password** before creating the link. The browser encrypts
-the event time, description, and organizer time zone. Recipients enter the
-password to unlock the event. Leave the field blank to create a public link.
+The link stores one exact moment. Every phone and computer shows that same moment in its own time zone.
 
-Share the password separately. Anyone with the link can try guesses offline.
-Password protection cannot guarantee privacy, and the site owner assumes no
-responsibility if someone guesses the password. Creating and unlocking protected
-links uses built-in Web Crypto and requires HTTPS on a hosted site. Local preview
-on `127.0.0.1` also works. The protected link flow is tested in Chromium,
-Firefox, and WebKit.
+These pictures use one sample event: **June 20, 2026, at 7:30 PM in New York**. The countdown is frozen at June 1, so you can see the numbers sit still.
 
-### QR codes
+| Person | Time on their clock |
+| --- | --- |
+| Organizer in New York | June 20, 2026, 7:30 PM |
+| Friend in London | June 21, 2026, 12:30 AM |
+| Friend in Tokyo | June 21, 2026, 8:30 AM |
 
-**Generate QR code** encodes the full event link. You can download it as a PNG
-or print it. Scanning a protected link opens the same password prompt.
+In June, London is five hours ahead of New York. So 7:30 PM in New York is 12:30 AM the next day in London. Tokyo is 13 hours ahead, so that same moment is 8:30 AM.
 
-For a typical event URL, about 2,300 characters is a rough capacity estimate.
-The exact limit depends on how the URL is encoded. If the app reports that the
-link is too long, keep **Compress event link** checked or shorten the description
-and generate a new link. You can still share the link directly.
-[QR capacity table](https://www.qrcode.com/en/about/version.html)
+---
+
+## See it
+
+### You fill in the event
+
+<img src="docs/images/create-event.png" width="800" alt="The create form filled in for Saturday game night at 7:30 PM in America/New_York.">
+
+Type a city or a region, such as `London` or `New York`, or paste a time zone name such as `America/New_York`. Then pick the date and time **in that zone**.
+
+### You pick the date and time
+
+<img src="docs/images/pick-time.png" width="420" alt="The date picker open on June 20, 2026, with the time set to 7:30 PM.">
+
+### You share the link
+
+<img src="docs/images/share-link.png" width="800" alt="The share box with the event link, a Copy link button, and a QR code.">
+
+This sample was made on this computer, so the link starts with `127.0.0.1`. On your website, it starts with your site address.
+
+### A friend in London opens it
+
+<img src="docs/images/countdown.png" width="800" alt="A countdown page set to Europe/London. It shows 21 June 2026 at 00:30, which is 12:30 AM, with 19 days, 8 hours, and 30 minutes remaining. The organizer time is 7:30 PM in New York.">
+
+The app follows the language on each computer. This London computer shows `00:30` in 24-hour time. That is 12:30 AM. The countdown still points at the New York time you picked.
+
+---
+
+## Make a link
+
+1. Open the site.
+2. Choose the **Event time zone**.
+3. Choose the **Event date and time** in that zone.
+4. Add a short **Description** if you want one. `Saturday game night` is enough.
+5. Leave **Compress event link** checked. The site keeps the shorter link.
+6. Click **Create event link**.
+7. Click **Copy link**, or **Generate QR code** and send the picture.
+
+A line under the button shows the time you saved, including how far that zone sits from the shared world clock (UTC). For this sample it reads `2026-06-20T19:30 UTC-04:00 (America/New_York)`. UTC−4 means four hours behind that shared clock.
+
+If the plan changes, make a new link. Old links keep the old time.
+
+---
+
+## Three ways to share
+
+| Way | Use it when |
+| --- | --- |
+| **Copy link** | You are in chat, email, or Discord |
+| **QR code** | You want a poster, a slide, or a stream overlay |
+| **Password** | You want the time and the note hidden until someone types a password |
+
+<img src="docs/images/password.png" width="800" alt="A card titled Password protected event, with a password box and an Unlock event button.">
+
+Leave the password box empty for a public link. If you fill it in, send the password in a **different message** from the link. Anyone who has the link can try guesses on their own computer. A password cannot promise the event will stay private. If someone guesses it, the site owner is not responsible.
+
+A normal invite fits in a QR code. A very long note might not. Shorten the note, or copy the link instead.
+
+The full steps, limits, and warnings are in [Using the timer](docs/using-the-timer.md).
+
+---
+
+## What people can do with the link
+
+- Read the event in their own time zone.
+- Switch **Display time zone** to look at another zone. The countdown still aims at the same moment.
+- Copy the time, download it as text, or print it.
+- Download a calendar file and add the event to a calendar app.
+- Come back later. The countdown uses the clock on their device.
+
+The page uses the time zone already set on the computer.
+
+---
+
+## When the clock jumps
+
+Some places move the clock forward or back twice a year.
+
+- If you pick an hour that never happens, because the clock jumped forward, pick a different time.
+- If you pick an hour that happens twice, because the clock fell back, the site asks you which one you mean.
+
+The preview line shows the choice you saved.
+
+---
+
+## More reading
+
+Each guide is for one group. Start with the row that matches you.
+
+| If you want to… | Read this |
+| --- | --- |
+| Create links, use passwords, print QR codes, and save a calendar file | [Using the timer](docs/using-the-timer.md) |
+| Put the site on the web, or download a release | [Hosting](docs/hosting.md) |
+| Build a link by hand, or see how a link is stored | [Event links](docs/event-links.md) |
+| Change the code and run the tests | [Contributing](CONTRIBUTING.md) |
+| See how the calendar file is built | [Calendar export](docs/calendar-export.md) |
+
+---
 
 ## License
 
 Licensed under the [MIT License](LICENSE).
 
-## Development
-
-Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Run `npm ci` and `npx playwright install chromium`, then
-`npm run check` to run unit tests, build the site, and run the full Chromium suite. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for the lightweight TDD workflow.
-
-## Building and hosting
-
-`npm run build` creates a production site in `dist/` and exits; `npm run prod`
-is retained as an alias for compatibility. `npm run build:dev` makes a one-shot
-development build. `npm run dev` watches source files; stop it with Ctrl+C.
-Use `npm run serve` in another terminal to serve the built files locally.
-Deploy the contents of `dist/` to a static host over HTTPS. Node is only needed
-for development and builds.
-
-The built HTML sets a Content Security Policy and a no-referrer policy. Configure
-the production host to send the same headers as the preview server. The CSP
-header adds frame protection, which browsers require in an HTTP response header.
-See the [CSP `frame-ancestors` specification](https://www.w3.org/TR/CSP3/#directive-frame-ancestors).
-
-```text
-Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
-Referrer-Policy: no-referrer
-X-Content-Type-Options: nosniff
-```
-
-Serve JavaScript and SVG with the correct MIME types. On the deployed site,
-verify the response headers, create and unlock a protected link, and try copying
-the link and printing its QR code.
-
-## Event link format
-
-**Compress event link** is checked by default. The app uses the compressed event
-query when it is shorter. Clear the checkbox to use the uncompressed query.
-All formats carry the full event in the URL and work on a static host. They
-accept descriptions up to 4,096 UTF-8 bytes and organizer time zones up to 128
-characters. The encoded event query is capped at 13 KiB before encryption.
-Existing links over these limits need to be recreated with shorter values.
-Hosts and sharing tools can impose smaller URL limits.
-
-Compressed links use a `v1` query parameter containing unpadded base64url of raw
-DEFLATE data. The data is a UTF-8 JSON array of the UTC epoch time in
-milliseconds, the description, and the organizer's timezone (or `null`).
-
-Uncompressed links encode a UTC ISO 8601 instant in `date` (with seconds and optional
-three-digit milliseconds) and optional text in `desc`. Valid legacy UTC-string
-links remain readable. Local-time strings, impossible dates, and repeated date
-parameters are rejected with an explanation. Tracking-only links open creation.
-Links are snapshots. Changing an event requires sharing a newly generated link.
-
-Protected links store the encrypted event query in a `#p1=` URL fragment.
-The unpadded base64url payload contains a 16-byte random salt, a 12-byte random
-IV, and the AES-256-GCM ciphertext with a 16-byte authentication tag. The browser
-derives the key from the password with PBKDF2-HMAC-SHA-256 and 600,000 iterations.
-The fragment stays out of the HTTP request to the host. Public links carry the
-event data in the query string.
-
-To build a public uncompressed link by hand, add the query parameters to your
-site URL.
-
-```text
-https://your-site.example/?date=2026-06-15T19%3A30%3A00.000Z&desc=Game+night&zone=America%2FNew_York
-```
-
-- `date` is required and must be a UTC instant in ISO 8601 format, ending in
-  `Z`. It represents the event's exact moment, regardless of the organizer's
-  timezone.
-- `desc` is optional event text. URL-encode spaces and special characters; for
-  example, a space can be written as `+`.
-- `zone` is an optional named IANA timezone such as `America/New_York`. It lets
-  visitors see the organizer's event time as well as their own. It does not
-  control viewer-time conversion; that uses each visitor's browser timezone.
-
-You can omit `desc` or `zone`. When creating links in code, use
-`URLSearchParams` (or an equivalent URL encoder) so values are encoded safely.
-
-## Viewing and exporting an event
-
-The event page starts in your browser's local time. Use the **Display time zone**
-dropdown to view another zone or return to your local time. The countdown still
-tracks the same event instant. Organizer time
-appears when the link includes valid origin-zone metadata. If browser timezone
-detection/formatting is unavailable, the page falls back to labeled UTC.
-No geolocation permission, IP lookup, or saved preference is required.
-
-The countdown rounds remaining seconds up and changes to started at the exact
-event instant. It refreshes when the tab regains focus or visibility. Countdown
-accuracy depends on the viewer device clock; the event instant remains fixed.
-
-Use **Download text**, **Copy text**, or **Print event** to export the displayed
-time and description as plain text. If copying is unavailable, the app selects
-the text for manual copying.
-
-Use **Download calendar file (.ics)** to save the event's start time and
-description for a calendar app. The calendar title is **Event**. A file
-downloaded from an unlocked event is plain text.
-
-**Copy link** reports success only after the browser confirms the copy. If
-copying is unavailable or denied, the link field is selected for manual copying.
-Changing event details or link options clears the generated link. Create a new
-link before copying again.
-
-## Manual GitHub releases
-
-In GitHub Actions, open **Release** and select **Run workflow**.
-Select **main** (or another branch you intend to release), then
-click **Run workflow**. No local release command or personal access token is needed.
-
-The workflow tests the exact selected commit, builds a ZIP, extracts it, and runs
-the Chromium smoke flow against the extracted site before publishing. The release
-contains `tz-global-event-timer-vYYYY.MM.DD.RUN.zip`, its SHA-256 checksum, change
-notes, source commit, UTC build time, and a link to the workflow run.
-
-The date comes from the workflow run creation time in UTC. The run number makes
-same-day releases unique; rerunning the same run keeps the same version even
-after midnight. A successful rerun keeps the existing published release intact.
-A failed upload leaves a draft that the same run can safely retry. Releases are
-serialized; normal CI, pushes, and tags never publish automatically.
-
-Download the attached deployable ZIP. Verify with
-`sha256sum -c <filename>.zip.sha256`, or compare PowerShell's
-`Get-FileHash <filename>.zip -Algorithm SHA256` with the checksum file. Extract
-the whole ZIP into the web root of a static HTTPS host. Keep all assets and
-license notices together. HTTPS enables password protection and clipboard
-support.
-
-The release script uses GitHub's built-in token. If repository rules reject
-a tag or release operation, the workflow reports the error.
+Created by Matthew Craig.
