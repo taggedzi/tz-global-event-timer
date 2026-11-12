@@ -38,3 +38,21 @@ test('creation uses timezone-free calendar input and safely round-trips text', t
   assert.equal(view.document.querySelectorAll('#link a').length, 1);
   assert.equal(view.document.querySelectorAll('#link img').length, 0);
 });
+
+test('oversized descriptions show an inline error and allow correction', t => {
+  const view = mount(); t.after(view.close);
+  view.select(new Date('2028-02-29T12:34:00Z'));
+  const description = view.document.getElementById('newEventDesc');
+  description.value = '🎮'.repeat(1025);
+  view.document.getElementById('create').click();
+  assert.match(view.document.getElementById('formError').textContent, /description/i);
+  assert.equal(view.document.activeElement, description);
+  assert.equal(view.document.getElementById('link').dataset.link, undefined);
+  assert.deepEqual(view.errors, []);
+
+  description.value = 'Game night';
+  description.dispatchEvent(new view.window.Event('input'));
+  view.document.getElementById('create').click();
+  assert.ok(view.document.getElementById('link').dataset.link);
+  assert.equal(view.document.getElementById('formError').textContent, '');
+});

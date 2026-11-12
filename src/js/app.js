@@ -1,4 +1,4 @@
-const { decodeEvent, encodeEventUrl } = require('./event-link');
+const { DESCRIPTION_TOO_LONG, descriptionFits, decodeEvent, encodeEventUrl } = require('./event-link');
 const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
 
 const { formatEventTime } = require('./viewer');
@@ -46,7 +46,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('occurrenceContainer').hidden = true;
     el('occurrence').replaceChildren();
     el('formError').textContent = '';
-    for (const id of ['newEvent', 'eventZone', 'occurrence']) el(id).removeAttribute('aria-invalid');
+    for (const id of ['newEvent', 'eventZone', 'occurrence', 'newEventDesc']) el(id).removeAttribute('aria-invalid');
   }
   for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
   listen(el('compressLink'), 'change', clearShareLink);
@@ -96,9 +96,18 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       return;
     }
     el('newEvent').removeAttribute('aria-invalid');
+    const description = el('newEventDesc');
+    if (!descriptionFits(description.value)) {
+      clearShareLink();
+      el('formError').textContent = DESCRIPTION_TOO_LONG;
+      description.setAttribute('aria-invalid', 'true');
+      description.focus();
+      return;
+    }
+    description.removeAttribute('aria-invalid');
     el('eventPreview').textContent = choice.label;
     const url = encodeEventUrl({
-      date: choice.date, description: el('newEventDesc').value, zone: el('eventZone').value
+      date: choice.date, description: description.value, zone: el('eventZone').value
     }, location.href, { compress: el('compressLink').checked });
     const anchor = document.createElement('a');
     anchor.href = url;

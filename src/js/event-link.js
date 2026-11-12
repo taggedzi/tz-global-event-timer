@@ -1,12 +1,28 @@
 const { deflateSync, Inflate } = require('fflate');
+const { MAX_TIME_ZONE_LENGTH } = require('./timezone');
 
 // v1 contains a raw DEFLATE stream of UTF-8 JSON: [epoch milliseconds, description, zone].
 const COMPRESSED_EVENT = 'v1';
 const MAX_EVENT_BYTES = 1024 * 1024;
+const MAX_DESCRIPTION_BYTES = 4096;
+// Percent encoding can triple the description size. Leave room for the date and zone.
+const MAX_QUERY_LENGTH = 13 * 1024;
+const DESCRIPTION_TOO_LONG = 'Shorten the event description to 4,096 bytes or less.';
 const INVALID_COMPRESSED_EVENT = {
   kind: 'invalid',
   message: 'This compressed event link is invalid. Ask the organizer for a valid link, or create a new event.'
 };
+
+function descriptionFits(description) {
+  return description.length <= MAX_DESCRIPTION_BYTES && new TextEncoder().encode(description).length <= MAX_DESCRIPTION_BYTES;
+}
+
+function decodedEvent(date, description, zone) {
+  if (!descriptionFits(description) || (zone !== null && zone.length > MAX_TIME_ZONE_LENGTH)) {
+    return { kind: 'invalid', message: 'This event link has a description or timezone that is too long.' };
+  }
+  return { kind: 'event', date, description, zone };
+}
 
 const ISO = /^(\d{4}|[+-]\d{6})-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
 const LEGACY = /^(Sun|Mon|Tue|Wed|Thu|Fri|Sat), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
@@ -29,7 +45,7 @@ function parseEventDate(value) {
 function decodeCompressedEvent(params) {
   const values = params.getAll(COMPRESSED_EVENT);
   const encoded = values[0];
-  if (values.length !== 1 || params.has('date') || encoded.length > Math.ceil(MAX_EVENT_BYTES * 4 / 3) ||
+  if (values.length !== 1 || params.has('date') ||
       !/^[A-Za-z0-9_-]+$/.test(encoded)) return INVALID_COMPRESSED_EVENT;
 
   try {
@@ -52,29 +68,34 @@ function decodeCompressedEvent(params) {
     const date = new Date(timestamp);
     if (!Number.isSafeInteger(timestamp) || !Number.isFinite(date.getTime()) ||
         typeof description !== 'string' || (zone !== null && typeof zone !== 'string')) return INVALID_COMPRESSED_EVENT;
-    return { kind: 'event', date, description, zone };
+    return decodedEvent(date, description, zone);
   } catch {
     return INVALID_COMPRESSED_EVENT;
   }
 }
 
 function decodeEvent(query) {
+  if (query?.length > MAX_QUERY_LENGTH) return { kind: 'invalid', message: 'This event link is too long.' };
   const params = new URLSearchParams(query);
   if (params.has(COMPRESSED_EVENT)) return decodeCompressedEvent(params);
   if (!params.has('date')) return { kind: 'none' };
   const values = params.getAll('date');
   const date = values.length === 1 ? parseEventDate(values[0]) : null;
   if (!date) return { kind: 'invalid', message: 'This event link has an invalid date. Ask the organizer for a valid link, or create a new event.' };
-  return { kind: 'event', date, description: params.get('desc') || '', zone: params.get('zone') || null };
+  return decodedEvent(date, params.get('desc') || '', params.get('zone') || null);
 }
 function encodeEventUrl({ date, description = '', zone }, baseUrl, { compress = true } = {}) {
   if (!date || !Number.isFinite(date.getTime())) throw new Error('Select a valid event date and time.');
+  description = String(description);
+  if (!descriptionFits(description)) throw new RangeError(DESCRIPTION_TOO_LONG);
+  if (zone && String(zone).length > MAX_TIME_ZONE_LENGTH) throw new RangeError('Shorten the event timezone.');
   const url = new URL(baseUrl);
   url.search = '';
   url.hash = '';
   url.searchParams.set('date', date.toISOString());
   url.searchParams.set('desc', description);
   if (zone) url.searchParams.set('zone', zone);
+  if (url.search.length > MAX_QUERY_LENGTH) throw new RangeError('Shorten the event link.');
   const plainUrl = url.href;
   if (!compress) return plainUrl;
 
@@ -93,4 +114,4 @@ function encodeEventUrl({ date, description = '', zone }, baseUrl, { compress = 
   url.search = '?' + COMPRESSED_EVENT + '=' + encoded;
   return url.href.length < plainUrl.length ? url.href : plainUrl;
 }
-module.exports = { parseEventDate, decodeEvent, encodeEventUrl };
+module.exports = { DESCRIPTION_TOO_LONG, descriptionFits, parseEventDate, decodeEvent, encodeEventUrl };

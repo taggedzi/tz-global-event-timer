@@ -36,7 +36,7 @@ test('uses the existing format when compression would make a link longer', () =>
 test('rejects malformed, ambiguous, and oversized compressed event data', () => {
   const payload = json => Buffer.from(deflateSync(new TextEncoder().encode(json))).toString('base64url');
   const valid = payload('[0,"event","UTC"]');
-  const oversized = payload(JSON.stringify([0, 'a'.repeat(1024 * 1024), null]));
+  const oversized = payload(' '.repeat(1024 * 1024) + '[0,"event","UTC"]');
   for (const query of [
     '?v1=', '?v1=invalid!', '?v1=' + valid.slice(0, -4),
     '?v1=' + valid + '&v1=' + valid, '?v1=' + valid + '&date=2028-01-01T00:00:00Z',
@@ -44,4 +44,35 @@ test('rejects malformed, ambiguous, and oversized compressed event data', () => 
   ]) {
     assert.equal(decodeEvent(query).kind, 'invalid');
   }
+});
+
+test('enforces the same description and timezone limits across link formats', () => {
+  const base = 'https://example.test/';
+  const date = new Date('2030-01-01T00:00:00Z');
+  const description = '🎮'.repeat(1024);
+  const zone = 'Europe/London';
+  const plain = (desc, zone) => '?' + new URLSearchParams({ date: date.toISOString(), desc, zone });
+  const compressed = (desc, zone) => '?v1=' + Buffer.from(deflateSync(new TextEncoder().encode(
+    JSON.stringify([date.getTime(), desc, zone])
+  ))).toString('base64url');
+
+  for (const compress of [false, true]) {
+    const url = new URL(encodeEventUrl({ date, description, zone }, base, { compress }));
+    assert.equal(url.searchParams.has('v1'), compress);
+    assert.deepEqual(decodeEvent(url.search), { kind: 'event', date, description, zone });
+    assert.throws(() => encodeEventUrl({ date, description: description + 'x', zone }, base, { compress }), /description/i);
+    assert.throws(() => encodeEventUrl({ date, zone: 'x'.repeat(129) }, base, { compress }), /timezone/i);
+  }
+  for (const link of [plain, compressed]) {
+    assert.equal(decodeEvent(link(description + 'x', zone)).kind, 'invalid');
+    assert.equal(decodeEvent(link('', 'x'.repeat(128))).kind, 'event');
+    assert.equal(decodeEvent(link('', 'x'.repeat(129))).kind, 'invalid');
+  }
+});
+
+test('caps the entire query even when the excess is in an unrelated parameter', () => {
+  const tracking = '?utm_source=';
+  const limit = 13 * 1024;
+  assert.equal(decodeEvent(tracking.padEnd(limit, 'x')).kind, 'none');
+  assert.equal(decodeEvent(tracking.padEnd(limit + 1, 'x')).kind, 'invalid');
 });

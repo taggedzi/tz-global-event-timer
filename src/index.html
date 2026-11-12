@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="<%= htmlWebpackPlugin.options.contentSecurityPolicy %>">
+    <meta name="referrer" content="<%= htmlWebpackPlugin.options.referrerPolicy %>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Share an event link that shows the correct local time and countdown for every viewer.">
     <title><%= htmlWebpackPlugin.options.title %></title>
@@ -61,7 +63,7 @@
             </div>
             <div class="field">
                 <label for="newEventDesc">Description <span class="hint">(optional)</span></label>
-                <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Team demo day">
+                <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Team demo day" aria-describedby="formError">
             </div>
             <label class="checkbox-label">
                 <input id="compressLink" name="compressLink" type="checkbox" checked>

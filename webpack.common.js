@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('node:fs');
 const { BannerPlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { contentSecurityPolicy, referrerPolicy } = require('./scripts/security-headers.cjs');
 
 module.exports = {
     entry: {
@@ -25,6 +26,8 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             title: 'Global Event Timer',
+            contentSecurityPolicy,
+            referrerPolicy,
             favicon: path.resolve(__dirname, 'src/event-timer.svg'),
             filename: 'index.html',
             template: path.resolve(__dirname, "src/index.html")

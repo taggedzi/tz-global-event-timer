@@ -24,15 +24,33 @@ Use Node.js 24 LTS. Run `npm ci` and `npx playwright install chromium`, then
 is retained as an alias for compatibility. `npm run build:dev` makes a one-shot
 development build. `npm run dev` watches source files; stop it with Ctrl+C.
 Use `npm run serve` in another terminal to serve the built files locally.
-Deploy the contents of `dist/` to a static HTTP(S) host; Node is build tooling,
-not a required production server. Node 24 LTS is the documented development/CI
-target; direct build dependencies are declared in package.json and locked.
+Deploy the contents of `dist/` to a static host over HTTPS. Node is only needed
+for development and builds.
+
+The built HTML sets a Content Security Policy and a no-referrer policy. Configure
+the production host to send the same headers as the preview server. The CSP
+header adds frame protection, which browsers require in an HTTP response header.
+See the [CSP `frame-ancestors` specification](https://www.w3.org/TR/CSP3/#directive-frame-ancestors).
+
+```text
+Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+Referrer-Policy: no-referrer
+X-Content-Type-Options: nosniff
+```
+
+Serve JavaScript and SVG with the correct MIME types. On the deployed site,
+verify the response headers and try creating, copying, opening, and printing an
+event link's QR code.
 
 ## Event link format
 
 **Compress event link** is checked by default. The app uses the compressed link
 when it is shorter. Clear the checkbox to generate an uncompressed link.
 Both formats carry the full event in the URL and work on a static host.
+Both accept descriptions up to 4,096 UTF-8 bytes and organizer timezones up to
+128 characters. The full encoded query is capped at 13 KiB. Existing links over
+these limits need to be recreated with shorter values. Hosts and sharing tools
+can impose smaller URL limits.
 
 Compressed links use a `v1` query parameter containing unpadded base64url of raw
 DEFLATE data. The data is a UTF-8 JSON array of the UTC epoch time in

@@ -1,6 +1,7 @@
 const { Temporal } = require('@js-temporal/polyfill');
+const MAX_TIME_ZONE_LENGTH = 128;
 function isTimeZone(zone, intl = Intl) {
-  if (typeof zone !== 'string' || (zone !== 'UTC' && !zone.includes('/'))) return false;
+  if (typeof zone !== 'string' || zone.length > MAX_TIME_ZONE_LENGTH || (zone !== 'UTC' && !zone.includes('/'))) return false;
   try { new intl.DateTimeFormat('en', { timeZone: zone }); return true; } catch { return zone === 'UTC'; }
 }
 function detectTimeZone(intl = Intl) {
@@ -29,4 +30,4 @@ function resolveWallTime(wall, zone) {
     return { kind: choices.length === 0 ? 'gap' : choices.length === 2 ? 'ambiguous' : 'valid', choices };
   } catch { return { kind: 'invalid', choices: [] }; }
 }
-module.exports = { isTimeZone, detectTimeZone, supportedTimeZones, resolveWallTime };
+module.exports = { MAX_TIME_ZONE_LENGTH, isTimeZone, detectTimeZone, supportedTimeZones, resolveWallTime };
