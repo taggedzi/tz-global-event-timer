@@ -46,3 +46,12 @@ Physical keyboard and screen-reader spot checks were unavailable in this agent
 environment. Native date/time and datalist popovers vary by browser and OS; their
 screen-reader behavior still needs a human spot check. Passing automated checks
 is not a claim of complete accessibility.
+
+## Release verification
+
+The release helpers have deterministic unit tests for calendar versions, archive
+contents and hashes, API failures, tag mismatches, draft recovery, and reruns.
+`npm run test:smoke` runs just the shared Chromium smoke flow; set SITE_DIR to
+an extracted ZIP to test the real package without publishing. Validate workflow
+syntax with actionlint when changing `.github/workflows/` files. A live manual
+release is the owner?s final verification; agents must not dispatch one as a test.
