@@ -189,8 +189,10 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     listen(el('viewerZone'), 'change', renderViewer);
     if (event.zone && isTimeZone(event.zone, intl))
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
+    const hasDescription = Boolean(event.description.trim());
     el('eventDesc').textContent = event.description;
-    el('guestFallback').hidden = Boolean(event.description.trim());
+    el('eventDesc').hidden = !hasDescription;
+    el('guestFallback').hidden = hasDescription;
     el('countdown').style.display = 'block';
     el('existingEventTimer').style.display = 'grid';
     disposeCountdown = startCountdown({ target: event.date.getTime(), now: getNow, setInterval, clearInterval, window,

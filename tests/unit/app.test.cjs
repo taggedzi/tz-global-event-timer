@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mount } = require('./helpers.cjs');
-for (const description of ['', 'Game night & friends 🎮']) {
+for (const description of ['', 'Game night & friends 🎮\nBring a snack.']) {
   test('creates and opens description ' + JSON.stringify(description), t => {
     const creator = mount(); t.after(creator.close);
     creator.select(new Date('2026-01-02T01:02:00Z'));
@@ -10,7 +10,11 @@ for (const description of ['', 'Game night & friends 🎮']) {
     const url = new URL(creator.document.getElementById('link').dataset.link);
     assert.equal(url.pathname, '/timer/');
     const viewer = mount(url.search); t.after(viewer.close);
-    assert.equal(viewer.document.getElementById('eventDesc').textContent, description);
+    const displayedDescription = viewer.document.getElementById('eventDesc');
+    assert.equal(displayedDescription.tagName, 'P');
+    assert.equal(displayedDescription.textContent, description);
+    assert.equal(displayedDescription.hidden, !description);
+    assert.equal(viewer.document.getElementById('guestFallback').hidden, Boolean(description));
     assert.equal(Date.parse(viewer.document.getElementById('existingEventTime').dataset.instant), Date.parse('2026-01-02T01:02:00Z'));
     for (const tick of viewer.callbacks.values()) tick();
     for (const [id, value] of [['days', '1'], ['hours', '1'], ['minutes', '2']])

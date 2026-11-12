@@ -46,7 +46,7 @@ p { text-wrap: pretty; }
 }
 #existingEventTimer, #linkContainer { display: none; }
 #existingEventTimer { box-shadow: 0 16px 40px #23427412; }
-#guestHeading { font-size: 30px; line-height: 36px; }
+#guestFallback { font-size: 30px; line-height: 36px; }
 #eventDesc { white-space: pre-wrap; }
 .local-time { background: var(--highlight); border-radius: 12px; padding: 16px; }
 #displayTimeLabel, label { font-size: 14px; line-height: 20px; font-weight: 700; }
@@ -96,7 +96,7 @@ a:hover { text-decoration-thickness: 2px; }
 #link { margin-right: auto; }
 #link a { display: inline-block; padding-block: 12px; }
 [role="alert"] { color: var(--error); }
-#originEventTime:empty, #eventDesc:empty { display: none; }
+#originEventTime:empty { display: none; }
 [role="alert"]:empty, [role="status"]:empty { position: absolute; }
 #eventPreview { color: #185037; }
 #qrResult { display: grid; justify-items: start; gap: 12px; }
