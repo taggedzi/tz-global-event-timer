@@ -47,3 +47,8 @@ No geolocation permission, IP lookup, or saved preference is required.
 The countdown rounds remaining seconds up and changes to started at the exact
 event instant. It refreshes when the tab regains focus or visibility. Countdown
 accuracy depends on the viewer device clock; the event instant remains fixed.
+
+Copy link reports success only after the browser confirms the copy. If copying
+is unavailable or denied, the link field is selected for manual copying.
+Changing event details clears the generated link, so create a new link before
+copying again.

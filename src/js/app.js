@@ -3,6 +3,7 @@ const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = requ
 
 const { formatEventTime } = require('./viewer');
 const { startCountdown } = require('./countdown');
+const { createCopyController } = require('./clipboard');
 const activeApps = new WeakMap();
 
 function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.now(),
@@ -11,6 +12,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   const { document, navigator, location } = window;
   const listeners = [];
   let disposeCountdown;
+  let copyController;
   function listen(target, type, handler) {
     target.addEventListener(type, handler);
     listeners.push(() => target.removeEventListener(type, handler));
@@ -27,6 +29,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('linkContainer').style.display = 'none';
     el('link').replaceChildren();
     delete el('link').dataset.link;
+    el('shareUrl').value = '';
+    copyController?.invalidate();
     el('eventPreview').textContent = '';
     el('occurrenceContainer').hidden = true;
     el('occurrence').replaceChildren();
@@ -36,20 +40,19 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
   invalidateCreation();
 
-  function fallbackCopyTextToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try { document.execCommand('copy'); } catch (error) { console.error(error); }
-    textArea.remove();
-  }
-  function copyTextToClipboard(text) {
-    if (!navigator.clipboard) return fallbackCopyTextToClipboard(text);
-    navigator.clipboard.writeText(text).catch(error => console.error(error));
-  }
+  copyController = createCopyController({
+    getUrl: () => el('link').dataset.link,
+    writeText(text) {
+      if (window.isSecureContext === false || !navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      return navigator.clipboard.writeText(text);
+    },
+    onStatus(status) {
+      el('copyStatus').textContent = status.message;
+      el('copyUrl').disabled = status.kind === 'pending' || !el('link').dataset.link;
+      if (status.kind === 'error') { el('shareUrl').focus(); el('shareUrl').select(); }
+    }
+  });
+  copyController.invalidate();
 
   listen(el('newEventContainer'), 'submit', event => {
     event.preventDefault();
@@ -87,9 +90,11 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     anchor.textContent = url;
     el('link').replaceChildren(anchor);
     el('link').dataset.link = url;
+    el('shareUrl').value = url;
+    copyController.invalidate();
     el('linkContainer').style.display = 'grid';
   });
-  listen(el('copyUrl'), 'click', () => copyTextToClipboard(el('link').dataset.link));
+  listen(el('copyUrl'), 'click', () => copyController.copy());
 
   const event = decodeEvent(location.search);
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
@@ -129,6 +134,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     if (destroyed) return;
     destroyed = true;
     disposeCountdown?.();
+    copyController.destroy();
     for (const remove of listeners) remove();
     if (activeApps.get(window) === app) activeApps.delete(window);
   } };

@@ -31,6 +31,8 @@ test('labels, keyboard submission, and error focus are usable', async ({ page })
   await page.getByLabel('Description (optional)').press('Tab');
   await expect(page.getByRole('button', { name: 'Create event link', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Shareable link')).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(page.locator('#link a')).toBeFocused();
   const outline = await page.locator('#link a').evaluate(el => getComputedStyle(el).outlineStyle);
   expect(outline).toBe('solid');
