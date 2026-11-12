@@ -21,11 +21,10 @@ test('empty submission gives an inline explanation, no exception or link', t => 
   assert.match(view.document.getElementById('formError')?.textContent || '', /select/i);
   assert.equal(view.document.getElementById('link').dataset.link, undefined);
 });
-test('creation uses the actual picker date and safely round-trips text', t => {
+test('creation uses timezone-free calendar input and safely round-trips text', t => {
   const view = mount(); t.after(view.close);
   const instant = new Date('2028-02-29T12:34:00Z');
   view.select(instant);
-  view.document.getElementById('newEvent').value = 'not a parseable display string';
   const description = '<img src=x onerror=alert(1)> & "quotes"\n🎮';
   view.document.getElementById('newEventDesc').value = description;
   // A text input normalizes newlines; URL model tests cover multi-line descriptions separately.
