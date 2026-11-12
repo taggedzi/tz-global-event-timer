@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { selectDateTime } = require('./date-time-picker.cjs');
 const { decodeEvent } = require('../../src/js/event-link');
 test('creator selects London independently of device, then resolves repeated times', async ({ browser }) => {
   const context = await browser.newContext({ timezoneId: 'America/New_York' });
   const page = await context.newPage();
   await page.goto('/');
-  await page.locator('#newEvent').fill('2026-01-02T20:00');
+  await selectDateTime(page, '2026-01-02T20:00');
   await page.locator('#eventZone').fill('Europe/London');
   await page.locator('#create').click();
   let url = await page.locator('#link a').getAttribute('href');
@@ -13,7 +14,7 @@ test('creator selects London independently of device, then resolves repeated tim
   expect(londonEvent.zone).toBe('Europe/London');
   await expect(page.locator('#eventPreview')).toContainText('Europe/London');
   await page.locator('#eventZone').fill('America/New_York');
-  await page.locator('#newEvent').fill('2026-11-01T01:30');
+  await selectDateTime(page, '2026-11-01T01:30');
   await expect(page.locator('#linkContainer')).toBeHidden();
   await page.locator('#create').click();
   await expect(page.locator('#formError')).toContainText('twice');
@@ -21,7 +22,7 @@ test('creator selects London independently of device, then resolves repeated tim
   await page.locator('#create').click();
   url = await page.locator('#link a').getAttribute('href');
   expect(decodeEvent(new URL(url).search).date.toISOString()).toBe('2026-11-01T06:30:00.000Z');
-  await page.locator('#newEvent').fill('2026-03-08T02:30');
+  await selectDateTime(page, '2026-03-08T02:30');
   await page.locator('#create').click();
   await expect(page.locator('#formError')).toContainText('does not exist');
   await expect(page.locator('#linkContainer')).toBeHidden();

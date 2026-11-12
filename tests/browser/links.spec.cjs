@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { selectDateTime } = require('./date-time-picker.cjs');
 
 test('event QR code can be downloaded and printed, and is cleared when the link changes', async ({ page }) => {
   await page.goto('/');
   await page.locator('#eventZone').fill('Europe/London');
-  await page.locator('#newEvent').fill('2030-07-01T20:00');
+  await selectDateTime(page, '2030-07-01T20:00');
   await page.locator('#create').click();
 
   const generate = page.getByRole('button', { name: 'Generate QR code' });
@@ -40,7 +41,7 @@ test('compression is on by default and can be turned off', async ({ page }) => {
   const compression = page.getByRole('checkbox', { name: 'Compress event link' });
   await expect(compression).toBeChecked();
   await page.locator('#eventZone').fill('Europe/London');
-  await page.locator('#newEvent').fill('2030-07-01T20:00');
+  await selectDateTime(page, '2030-07-01T20:00');
   const description = 'Game night 🎮 <img src=x onerror=alert(1)> & snacks. '.repeat(20).trim();
   await page.locator('#newEventDesc').fill(description);
   await page.locator('#create').click();
@@ -80,7 +81,7 @@ test('password protected links hide the event until unlocked and reject tamperin
   const password = 'plum lantern comet moss';
   await page.goto('/');
   await page.locator('#eventZone').fill('Europe/London');
-  await page.locator('#newEvent').fill('2030-07-01T20:00');
+  await selectDateTime(page, '2030-07-01T20:00');
   await page.locator('#newEventDesc').fill(description);
   await page.getByLabel('Protect with a password (optional)').fill(password);
   await expect(page.locator('#passwordHelp')).toContainText('offline');

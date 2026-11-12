@@ -3,6 +3,7 @@ const {
   decodeEvent, encodeEventUrl, isProtectedEventLink, readProtectedEventLink, encodeProtectedEventUrl, unlockEvent
 } = require('./event-link');
 const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
+const { initializeDateTimePicker } = require('./date-time-picker');
 
 const { formatEventTime } = require('./viewer');
 const { startCountdown } = require('./countdown');
@@ -20,11 +21,13 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   let eventCopyController;
   let destroyed = false;
   let shareRevision = 0;
-  function listen(target, type, handler) {
-    target.addEventListener(type, handler);
-    listeners.push(() => target.removeEventListener(type, handler));
+  function listen(target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    listeners.push(() => target.removeEventListener(type, handler, options));
   }
   const el = id => document.getElementById(id);
+  const dateTimeTrigger = el('eventDateTimeTrigger');
+  const closeDateTimePicker = initializeDateTimePicker({ document, locale: navigator.language, getNow, listen });
   const initialHash = location.hash;
   const protectedLink = isProtectedEventLink(initialHash);
   const linkPassword = el('linkPassword');
@@ -78,7 +81,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('occurrenceContainer').hidden = true;
     el('occurrence').replaceChildren();
     el('formError').textContent = '';
-    for (const id of ['newEvent', 'eventZone', 'occurrence', 'newEventDesc']) el(id).removeAttribute('aria-invalid');
+    for (const id of ['eventDateTimeTrigger', 'eventZone', 'occurrence', 'newEventDesc']) el(id).removeAttribute('aria-invalid');
   }
   const description = el('newEventDesc');
   const descriptionUsage = el('descriptionUsage');
@@ -149,12 +152,12 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     }
     el('formError').textContent = message;
     if (message) {
-      const invalidField = result.kind === 'ambiguous' ? el('occurrence') : !isTimeZone(el('eventZone').value) ? el('eventZone') : el('newEvent');
+      const invalidField = result.kind === 'ambiguous' ? el('occurrence') : !isTimeZone(el('eventZone').value) ? el('eventZone') : dateTimeTrigger;
       invalidField.setAttribute('aria-invalid', 'true');
       invalidField.focus();
       return;
     }
-    el('newEvent').removeAttribute('aria-invalid');
+    dateTimeTrigger.removeAttribute('aria-invalid');
     if (!descriptionFits(description.value)) {
       clearShareLink();
       el('formError').textContent = DESCRIPTION_TOO_LONG;
@@ -376,6 +379,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     eventCopyController?.destroy();
     clearEventPrintMode();
     for (const remove of listeners) remove();
+    closeDateTimePicker();
     if (activeApps.get(window) === app) activeApps.delete(window);
   } };
   activeApps.set(window, app);

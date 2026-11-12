@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { selectDateTime } = require('./date-time-picker.cjs');
 const { AxeBuilder } = require('@axe-core/playwright');
 test('layout reflows at narrow widths with long descriptions and links', async ({ page }) => {
   for (const width of [320,375,1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/?' + new URLSearchParams({ date: '2028-01-01T20:00:00.000Z', desc: 'Game night 🎮 '.repeat(40) }));
-    await page.locator('#newEvent').fill('2028-01-01T20:00');
+    await selectDateTime(page, '2028-01-01T20:00');
     await page.locator('#newEventDesc').fill('A very long event description 🎮 '.repeat(20));
     await page.locator('#create').click();
     const sizes = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: innerWidth }));
@@ -12,7 +13,7 @@ test('layout reflows at narrow widths with long descriptions and links', async (
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
     await page.goto('/?' + new URLSearchParams({ date: '2028-01-01T20:00:00.000Z', desc: 'Game night with friends 🎮', zone: 'Europe/London' }));
-    await page.locator('#newEvent').fill('2028-01-01T20:00');
+    await selectDateTime(page, '2028-01-01T20:00');
     await page.locator('#newEventDesc').fill('Game night with friends');
     await page.locator('#create').click();
     await page.screenshot({ path: 'test-results/layout-' + width + '.png', fullPage: true });
@@ -21,10 +22,10 @@ test('layout reflows at narrow widths with long descriptions and links', async (
 test('labels, keyboard submission, and error focus are usable', async ({ page }) => {
   await page.goto('/');
   await page.locator('#create').click();
-  await expect(page.getByLabel('Event date and time', { exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: /^Event date and time/ })).toBeFocused();
   await expect(page.locator('#formError')).toContainText('Select');
   await page.getByLabel('Event time zone', { exact: true }).fill('UTC');
-  await page.getByLabel('Event date and time', { exact: true }).fill('2028-01-01T20:00');
+  await selectDateTime(page, '2028-01-01T20:00');
   const description = page.getByLabel('Description (optional)');
   await description.fill('Keyboard event');
   await description.press('End');
@@ -47,7 +48,7 @@ test('labels, keyboard submission, and error focus are usable', async ({ page })
   const outline = await page.locator('#link a').evaluate(el => getComputedStyle(el).outlineStyle);
   expect(outline).toBe('solid');
   await page.locator('#eventZone').fill('America/New_York');
-  await page.locator('#newEvent').fill('2026-11-01T01:30');
+  await selectDateTime(page, '2026-11-01T01:30');
   await page.locator('#create').click();
   await expect(page.locator('#occurrence')).toBeFocused();
   await page.locator('#occurrence').press('ArrowDown');

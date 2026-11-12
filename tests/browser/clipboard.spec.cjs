@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { selectDateTime } = require('./date-time-picker.cjs');
 test('copy succeeds only after confirmation and recovers through a keyboard-selectable URL', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true,
     value: { writeText: async text => { window.lastCopied = text; throw new Error('Denied'); } } }));
   await page.goto('/');
-  await page.locator('#newEvent').fill('2028-01-01T20:00');
+  await selectDateTime(page, '2028-01-01T20:00');
   await page.locator('#newEventDesc').fill('Game night 🎮 & friends');
   await page.locator('#create').click();
   await page.getByRole('button', { name: 'Copy link', exact: true }).focus();

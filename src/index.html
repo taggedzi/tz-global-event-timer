@@ -85,9 +85,10 @@
                     <p id="zoneHelp" class="hint">Search by city or region, like London.</p>
                 </div>
                 <div class="field">
-                    <label for="newEvent">Event date and time</label>
-                    <input id="newEvent" name="newEvent" type="datetime-local" aria-describedby="dateHelp formError" step="60" required>
-                    <p id="dateHelp" class="hint">Enter the time in the event’s time zone.</p>
+                    <label id="eventDateTimeLabel" for="eventDateTimeTrigger">Event date and time</label>
+                    <button id="eventDateTimeTrigger" type="button" aria-haspopup="dialog" aria-controls="eventDateTimePicker" aria-labelledby="eventDateTimeLabel eventDateTimeTrigger" aria-describedby="dateHelp formError">Choose date and time</button>
+                    <input id="newEvent" name="newEvent" type="text" hidden>
+                    <p id="dateHelp" class="hint">Choose the time in the event’s time zone.</p>
                 </div>
             </div>
             <div id="occurrenceContainer" class="field" hidden>
@@ -139,6 +140,51 @@
         </section>
         <p class="hint share-note">If the event changes, create and share a new link.</p>
     </main>
+    <dialog id="eventDateTimePicker" aria-labelledby="pickerHeading" aria-describedby="pickerZone">
+        <form id="pickerForm" novalidate>
+            <header>
+                <h2 id="pickerHeading" tabindex="-1" autofocus>Choose event date and time</h2>
+                <p id="pickerZone" class="hint"></p>
+            </header>
+            <div class="picker-month-nav">
+                <button id="pickerPreviousMonth" class="secondary" type="button" aria-label="Previous month">‹</button>
+                <p id="pickerMonth" aria-live="polite"></p>
+                <button id="pickerNextMonth" class="secondary" type="button" aria-label="Next month">›</button>
+            </div>
+            <div class="picker-calendar hint" aria-hidden="true">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            </div>
+            <div id="pickerDays" class="picker-calendar" role="radiogroup" aria-labelledby="pickerMonth"></div>
+            <div class="field picker-date-field">
+                <label for="pickerDate">Date</label>
+                <input id="pickerDate" type="text" maxlength="10" autocomplete="off" aria-describedby="pickerDateHelp pickerError">
+                <p id="pickerDateHelp" class="hint">YYYY-MM-DD</p>
+            </div>
+            <fieldset class="picker-time">
+                <legend>Time</legend>
+                <div class="field">
+                    <label for="pickerHour">Hour</label>
+                    <input id="pickerHour" type="number" min="0" max="23" inputmode="numeric" aria-describedby="pickerError" required>
+                </div>
+                <div class="field">
+                    <label for="pickerMinute">Minute</label>
+                    <input id="pickerMinute" type="number" min="0" max="59" inputmode="numeric" aria-describedby="pickerError" required>
+                </div>
+                <div id="pickerPeriodField" class="field" hidden>
+                    <label for="pickerPeriod">AM or PM</label>
+                    <select id="pickerPeriod">
+                        <option value="am">AM</option>
+                        <option value="pm">PM</option>
+                    </select>
+                </div>
+            </fieldset>
+            <p id="pickerError" role="alert"></p>
+            <div class="picker-actions">
+                <button id="pickerCancel" class="secondary" type="button">Cancel</button>
+                <button type="submit">Use date and time</button>
+            </div>
+        </form>
+    </dialog>
     <p id="eventPrintText"></p>
 </body>
 </html>

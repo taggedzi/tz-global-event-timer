@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { selectDateTime } = require('./date-time-picker.cjs');
 test('creates a link and displays the same event across viewer timezones', async ({ browser }) => {
   const failures = [];
   function watch(page) {
@@ -15,7 +16,7 @@ test('creates a link and displays the same event across viewer timezones', async
   watch(page);
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
-  await page.locator('#newEvent').fill('2026-01-02T20:00');
+  await selectDateTime(page, '2026-01-02T20:00');
   await page.locator('#newEventDesc').fill('Game night & friends 🎮');
   await page.locator('#create').click();
   const url = await page.locator('#link a').getAttribute('href');
