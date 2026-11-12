@@ -1,0 +1,30 @@
+name: Feature request
+description: An idea for the timer.
+title: "Idea: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reply is not promised, and there is no date for one. A request may sit here with no change.
+  - type: textarea
+    id: want
+    attributes:
+      label: What you want
+      placeholder: A way to put the event name on the countdown page.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it helps
+      placeholder: People who get the link later cannot tell which raid it is.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Optional. A sketch, a limit, or a case that should keep working.
+    validations:
+      required: false

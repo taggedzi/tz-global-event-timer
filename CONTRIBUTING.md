@@ -2,6 +2,10 @@
 
 For people changing the code. The tour of the product is the [README](README.md).
 
+Be kind. The [code of conduct](CODE_OF_CONDUCT.md) is short. A reply is not promised.
+
+Security problems stay private. Follow the [security policy](SECURITY.md). Do not open a public issue for them.
+
 Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Install with `npm ci`, then
 `npx playwright install --with-deps chromium`. On Windows, omit --with-deps.
 
@@ -10,7 +14,7 @@ Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Install with `npm ci`, the
 1. Pick one issue and start a branch from updated main.
 2. Write an observable behavior test and run it. Confirm it fails for the intended reason.
 3. Make the smallest implementation change, then refactor with tests green.
-4. Run `npm run check`. Open a focused PR with `Closes #N`, a short explanation, and check results.
+4. Run `npm run check`. Open a focused PR. The form in [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) asks for a short explanation, how you checked it, and `Closes #N`.
 
 Separate test-only commits are optional. Configuration changes can start with a
 failing install/build check. No coverage percentage is required. Add meaningful

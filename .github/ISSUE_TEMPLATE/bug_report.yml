@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in the timer, a shared link, or the build is wrong.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reply is not promised, and there is no date for one. Security problems do not belong here. Report those in private: https://github.com/taggedzi/tz-global-event-timer/security/advisories/new
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see?
+      placeholder: The countdown showed the wrong day after I opened a link.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: The page should show 20 June 2026 at 7:30 PM in New York.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to see it again
+      description: Leave out passwords. If a link matters, say whether it has a password, and paste it only if it is safe to share.
+      placeholder: |
+        1. Open the site in Firefox.
+        2. Create a link for America/New_York on 20 June 2026 at 7:30 PM.
+        3. Open that link with the computer set to Europe/London.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      description: Optional. Name the browser, the device, and the time zone set on that device.
+      placeholder: Firefox on Windows, time zone Europe/London
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Optional.
+    validations:
+      required: false

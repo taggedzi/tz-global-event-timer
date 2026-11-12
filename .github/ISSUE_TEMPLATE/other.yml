@@ -1,0 +1,16 @@
+name: Question or other
+description: Something that is not a bug or a feature idea.
+title: "Question: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reply is not promised, and there is no date for one. Security problems do not belong here. Report those in private: https://github.com/taggedzi/tz-global-event-timer/security/advisories/new
+  - type: textarea
+    id: question
+    attributes:
+      label: What is going on
+      description: Enough detail to understand the question.
+    validations:
+      required: true

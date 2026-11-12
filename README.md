@@ -149,6 +149,8 @@ Each guide is for one group. Start with the row that matches you.
 | Put the site on the web, or download a release | [Hosting](docs/hosting.md) |
 | Build a link by hand, or see how a link is stored | [Event links](docs/event-links.md) |
 | Change the code and run the tests | [Contributing](CONTRIBUTING.md) |
+| See how people are asked to behave here | [Code of conduct](CODE_OF_CONDUCT.md) |
+| Report a security problem in private | [Security](SECURITY.md) |
 | See how the calendar file is built | [Calendar export](docs/calendar-export.md) |
 
 ---
