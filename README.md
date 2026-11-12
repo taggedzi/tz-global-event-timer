@@ -35,3 +35,11 @@ three-digit milliseconds) and optional text in `desc`. Valid legacy UTC-string
 links remain readable. Local-time strings, impossible dates, and repeated date
 parameters are rejected with an explanation. Tracking-only links open creation.
 Links are snapshots: changing an event requires sharing a newly generated link.
+
+## Viewer timezone
+
+The event page labels the detected browser timezone. Change Display timezone
+to view another zone without changing the event or countdown. Organizer time
+appears when the link includes valid origin-zone metadata. If browser timezone
+detection/formatting is unavailable, the page falls back to labeled UTC.
+No geolocation permission, IP lookup, or saved preference is required.
