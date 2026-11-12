@@ -9,3 +9,9 @@ Load the page into a web browser. Select a date/time for the event in your LOCAL
 ## License
 
 Licensed under the [MIT License](LICENSE).
+
+## Development
+
+Use Node.js 24 LTS. Run `npm ci` and `npx playwright install chromium`, then
+`npm run check` to run unit tests, build, and the Chromium smoke test. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the lightweight TDD workflow.
