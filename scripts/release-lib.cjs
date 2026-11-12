@@ -106,7 +106,7 @@ function collectNotices(projectRoot) {
     if (!relative || info.dev) continue;
     const directory = path.join(projectRoot,relative);
     const pkg = JSON.parse(fs.readFileSync(path.join(directory,'package.json'),'utf8'));
-    const licenseFiles = fs.readdirSync(directory).filter(name => /^(licen[cs]e|copying|notice)(\.|$)/i.test(name) && fs.statSync(path.join(directory,name)).isFile());
+    const licenseFiles = fs.readdirSync(directory).filter(name => /^(licen[cs]e|copying|notice)([.-]|$)/i.test(name) && fs.statSync(path.join(directory,name)).isFile());
     if (!licenseFiles.length) throw new Error('Missing third-party license for ' + pkg.name);
     notices.push(pkg.name + '@' + pkg.version + ' (' + (pkg.license || 'See notice') + ')\n' +
       licenseFiles.map(name => fs.readFileSync(path.join(directory,name),'utf8')).join('\n'));

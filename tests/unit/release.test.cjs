@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { unzipSync, zipSync, strToU8 } = require('fflate');
-const { calendarVersion, packageSite, validatePackage, publishRelease } = require('../../scripts/release-lib.cjs');
+const { calendarVersion, collectNotices, packageSite, validatePackage, publishRelease } = require('../../scripts/release-lib.cjs');
 const sha = 'a'.repeat(40);
 const metadata = { version: 'v2026.11.12.42', sha, runId: '123', runNumber: 42,
   runCreatedAt: '2026-11-12T00:00:00Z', buildTime: '2026-11-12T00:01:00Z', repository: 'owner/timer' };
@@ -26,6 +26,24 @@ test('calendar versions use UTC creation date and stable run numbers', () => {
   assert.equal(calendarVersion(metadata.runCreatedAt,42), metadata.version);
   assert.throws(() => calendarVersion('bad',42), /date/i);
   assert.throws(() => calendarVersion(metadata.runCreatedAt,0), /run/i);
+});
+test('collects license text from hyphenated license filenames', t => {
+  const root = fixture(t);
+  const dependency = 'node_modules/example';
+  fs.writeFileSync(path.join(root, 'package-lock.json'), JSON.stringify({ packages: { [dependency]: {} } }));
+  const directory = path.join(root, dependency);
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(path.join(directory, 'package.json'), JSON.stringify({ name: 'example', version: '1.0.0', license: 'MIT' }));
+  for (const name of ['style-loader', 'css-loader', 'webpack']) {
+    fs.mkdirSync(path.join(root, 'node_modules', name));
+    fs.writeFileSync(path.join(root, 'node_modules', name, 'LICENSE'), 'Build tool license');
+  }
+
+  const license = path.join(directory, 'LICENSE-MIT.txt');
+  fs.writeFileSync(license, 'Example MIT license text');
+  assert.match(collectNotices(root), /example@1\.0\.0 \(MIT\)\nExample MIT license text/);
+  fs.unlinkSync(license);
+  assert.throws(() => collectNotices(root), /Missing third-party license for example/);
 });
 test('package has deployable root files, metadata, notices, and a checksum', t => {
   const result = packageSite({ siteDirectory: fixture(t), metadata, license: 'MIT License', notices: 'Third-party licenses' });
