@@ -8,7 +8,7 @@
     "prod": "webpack --config webpack.prod.js"
   },
   "author": "Matthew Craig",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "flatpickr": "^4.6.11"
   },
