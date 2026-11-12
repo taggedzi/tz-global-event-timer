@@ -1,6 +1,6 @@
 # Contributing
 
-Use Node.js 24 LTS (see .nvmrc). Install with `npm ci`, then
+Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Install with `npm ci`, then
 `npx playwright install --with-deps chromium`. On Windows, omit --with-deps.
 
 ## Small TDD loop

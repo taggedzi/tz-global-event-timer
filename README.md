@@ -46,7 +46,7 @@ Licensed under the [MIT License](LICENSE).
 
 ## Development
 
-Use Node.js 24 LTS. Run `npm ci` and `npx playwright install chromium`, then
+Use the Node.js 26 LTS version in [`.nvmrc`](.nvmrc). Run `npm ci` and `npx playwright install chromium`, then
 `npm run check` to run unit tests, build the site, and run the full Chromium suite. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the lightweight TDD workflow.
 
