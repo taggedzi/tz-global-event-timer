@@ -36,6 +36,25 @@ links remain readable. Local-time strings, impossible dates, and repeated date
 parameters are rejected with an explanation. Tracking-only links open creation.
 Links are snapshots: changing an event requires sharing a newly generated link.
 
+The event form adds these query values to the generated link automatically. To
+build a link by hand, add them to your site URL as query parameters:
+
+```text
+https://your-site.example/?date=2026-06-15T19%3A30%3A00.000Z&desc=Game+night&zone=America%2FNew_York
+```
+
+- `date` is required and must be a UTC instant in ISO 8601 format, ending in
+  `Z`. It represents the event's exact moment, regardless of the organizer's
+  timezone.
+- `desc` is optional event text. URL-encode spaces and special characters; for
+  example, a space can be written as `+`.
+- `zone` is an optional named IANA timezone such as `America/New_York`. It lets
+  visitors see the organizer's event time as well as their own. It does not
+  control viewer-time conversion; that uses each visitor's browser timezone.
+
+You can omit `desc` or `zone`. When creating links in code, use
+`URLSearchParams` (or an equivalent URL encoder) so values are encoded safely.
+
 ## Viewer timezone
 
 The event page labels the detected browser timezone. Change Display timezone
