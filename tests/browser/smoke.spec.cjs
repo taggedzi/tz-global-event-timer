@@ -4,7 +4,7 @@ test('creates a link and displays the same event across viewer timezones', async
   const page = await context.newPage();
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
-  await page.locator('#newEvent').evaluate(el => el._flatpickr.setDate(new Date(2026, 0, 2, 20, 0), true));
+  await page.locator('#newEvent').fill('2026-01-02T20:00');
   await page.locator('#newEventDesc').fill('Game night & friends 🎮');
   await page.locator('#create').click();
   const url = await page.locator('#link a').getAttribute('href');

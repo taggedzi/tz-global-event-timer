@@ -1,10 +1,24 @@
 const { decodeEvent, encodeEventUrl } = require('./event-link');
+const { resolveWallTime, detectTimeZone, supportedTimeZones } = require('./timezone');
 
-function initializeApp({ window, flatpickr, now: getNow = () => Date.now(),
+function initializeApp({ window, now: getNow = () => Date.now(),
   setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
   const { document, navigator, location } = window;
   const el = id => document.getElementById(id);
-  const picker = flatpickr('#newEvent', { enableTime: true, dateFormat: 'Y-m-d H:i' });
+  el('eventZone').value = detectTimeZone(window.Intl);
+  for (const zone of supportedTimeZones(window.Intl)) {
+    const option = document.createElement('option'); option.value = zone; el('timeZones').appendChild(option);
+  }
+  function invalidateCreation() {
+    el('linkContainer').style.display = 'none';
+    el('link').replaceChildren();
+    delete el('link').dataset.link;
+    el('eventPreview').textContent = '';
+    el('occurrenceContainer').hidden = true;
+    el('occurrence').replaceChildren();
+    el('formError').textContent = '';
+  }
+  for (const id of ['newEvent', 'eventZone', 'newEventDesc']) el(id).addEventListener('input', invalidateCreation);
 
   function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement('textarea');
@@ -22,16 +36,34 @@ function initializeApp({ window, flatpickr, now: getNow = () => Date.now(),
   }
 
   el('create').addEventListener('click', () => {
-    const date = picker.selectedDates[0];
-    if (!date || !Number.isFinite(date.getTime())) {
-      el('formError').textContent = 'Select a valid event date and time.';
+    const result = resolveWallTime(el('newEvent').value, el('eventZone').value);
+    let choice = result.choices[0];
+    let message = '';
+    if (result.kind === 'invalid') message = 'Select a valid event date, time, and named timezone.';
+    if (result.kind === 'gap') message = 'This time does not exist in the selected timezone because the clock moves forward. Choose another time.';
+    if (result.kind === 'ambiguous') {
+      if (el('occurrence').options.length === 0) {
+        const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Choose an occurrence';
+        el('occurrence').appendChild(placeholder);
+        result.choices.forEach((candidate, index) => {
+          const option = document.createElement('option'); option.value = String(index);
+          option.textContent = (index === 0 ? 'First: ' : 'Second: ') + candidate.label;
+          el('occurrence').appendChild(option);
+        });
+      }
+      el('occurrenceContainer').hidden = false;
+      choice = el('occurrence').value === '' ? null : result.choices[Number(el('occurrence').value)];
+      if (!choice) message = 'This time occurs twice. Choose the first or second occurrence.';
+    }
+    el('formError').textContent = message;
+    if (message) {
       el('newEvent').setAttribute('aria-invalid', 'true');
-      el('newEvent').focus();
+      (result.kind === 'ambiguous' ? el('occurrence') : el('newEvent')).focus();
       return;
     }
-    el('formError').textContent = '';
     el('newEvent').removeAttribute('aria-invalid');
-    const url = encodeEventUrl({ date, description: el('newEventDesc').value }, location.href);
+    el('eventPreview').textContent = choice.label;
+    const url = encodeEventUrl({ date: choice.date, description: el('newEventDesc').value, zone: el('eventZone').value }, location.href);
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.textContent = url;

@@ -4,7 +4,9 @@ This project was created to help manage events in multiple timezones. I play gam
 
 ## Usage
 
-Load the page into a web browser. Select a date/time for the event in your LOCAL time. Optionally, you can add a short description, then click the Create Event Link. It will generate a URL. You can click on it directly, manually copy the link, or click the copy to clipboard button. Distribute that link to friends, when they view it they will see the even shown in their local time zone with a count down to the event.
+Select the event timezone, then enter a date and time in that zone. Optionally add a description and click Create Event Link. Share the generated link; visitors see the same event instant in their device timezone with a countdown.
+
+If the clock moves forward and the selected time does not exist, choose another time. If a time occurs twice when the clock moves back, explicitly choose its first or second occurrence using the displayed UTC offsets. The preview confirms the chosen date, time, zone, and offset.
 
 ## License
 
