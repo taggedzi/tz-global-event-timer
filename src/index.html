@@ -13,7 +13,7 @@
     <p id="linkError" role="alert"></p>
     <div id="existingEventTimer">
         <h2 id="eventDesc"></h2>
-        <div id="countdown">
+        <div id="countdown" aria-live="off">
             <ul>
                 <li><span id="days"></span>days</li>
                 <li><span id="hours"></span>Hours</li>
@@ -21,7 +21,7 @@
                 <li><span id="seconds"></span>Seconds</li>
             </ul>
         </div>
-        <h2 id="existingEventHeader"></h2>
+        <h2 id="existingEventHeader" aria-live="polite" aria-atomic="true"></h2>
         <div id="existingEventTime"></div>
         <label for="viewerZone">Display timezone</label>
         <input id="viewerZone" name="viewerZone" list="timeZones" autocomplete="off" aria-describedby="viewerZoneError">

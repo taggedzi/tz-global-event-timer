@@ -43,3 +43,7 @@ to view another zone without changing the event or countdown. Organizer time
 appears when the link includes valid origin-zone metadata. If browser timezone
 detection/formatting is unavailable, the page falls back to labeled UTC.
 No geolocation permission, IP lookup, or saved preference is required.
+
+The countdown rounds remaining seconds up and changes to started at the exact
+event instant. It refreshes when the tab regains focus or visibility. Countdown
+accuracy depends on the viewer device clock; the event instant remains fixed.
