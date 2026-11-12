@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { mount } = require('./helpers.cjs');
+const { decodeEvent } = require('../../src/js/event-link');
 for (const query of ['?date=not-a-date', '?date=', '?date=2026-02-30T00:00:00Z', '?date=2026-01-01T00:00:00Z&date=2027-01-01T00:00:00Z']) {
   test('bad link is recoverable: ' + query, t => {
     const view = mount(query); t.after(view.close);
@@ -31,8 +32,9 @@ test('creation uses timezone-free calendar input and safely round-trips text', t
   const normalized = view.document.getElementById('newEventDesc').value;
   view.document.getElementById('create').click();
   const link = new URL(view.document.getElementById('link').dataset.link);
-  assert.equal(link.searchParams.get('date'), instant.toISOString());
-  assert.equal(link.searchParams.get('desc'), normalized);
+  const event = decodeEvent(link.search);
+  assert.equal(event.date.toISOString(), instant.toISOString());
+  assert.equal(event.description, normalized);
   assert.equal(view.document.querySelectorAll('#link a').length, 1);
   assert.equal(view.document.querySelectorAll('#link img').length, 0);
 });

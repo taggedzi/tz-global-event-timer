@@ -21,14 +21,16 @@ test('layout reflows at narrow widths with long descriptions and links', async (
 test('labels, keyboard submission, and error focus are usable', async ({ page }) => {
   await page.goto('/');
   await page.locator('#create').click();
-  await expect(page.getByLabel('Event date and time in the selected timezone')).toBeFocused();
+  await expect(page.getByLabel('Event date and time', { exact: true })).toBeFocused();
   await expect(page.locator('#formError')).toContainText('Select');
-  await page.getByLabel('Event timezone', { exact: true }).fill('UTC');
-  await page.getByLabel('Event date and time in the selected timezone').fill('2028-01-01T20:00');
+  await page.getByLabel('Event time zone', { exact: true }).fill('UTC');
+  await page.getByLabel('Event date and time', { exact: true }).fill('2028-01-01T20:00');
   await page.getByLabel('Description (optional)').fill('Keyboard event');
   await page.getByLabel('Description (optional)').press('Enter');
   await expect(page.locator('#link a')).toBeVisible();
   await page.getByLabel('Description (optional)').press('Tab');
+  await expect(page.getByRole('checkbox', { name: 'Compress event link' })).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Create event link', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('Shareable link')).toBeFocused();

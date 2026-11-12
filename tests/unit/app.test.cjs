@@ -9,7 +9,6 @@ for (const description of ['', 'Game night & friends 🎮']) {
     creator.document.getElementById('create').click();
     const url = new URL(creator.document.getElementById('link').dataset.link);
     assert.equal(url.pathname, '/timer/');
-    assert.equal(Date.parse(url.searchParams.get('date')), Date.parse('2026-01-02T01:02:00Z'));
     const viewer = mount(url.search); t.after(viewer.close);
     assert.equal(viewer.document.getElementById('eventDesc').textContent, description);
     assert.equal(Date.parse(viewer.document.getElementById('existingEventTime').dataset.instant), Date.parse('2026-01-02T01:02:00Z'));

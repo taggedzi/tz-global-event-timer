@@ -9,14 +9,22 @@
 <body>
     <a class="skip-link" href="#main">Skip to event timer</a>
     <main id="main" tabindex="-1">
-        <header>
-            <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
-            <p>One event link. The right local time for everyone.</p>
+        <header class="page-header">
+            <p class="brand">
+                <img src="<%= htmlWebpackPlugin.files.favicon %>" width="32" height="32" alt="">
+                <%= htmlWebpackPlugin.options.title %>
+            </p>
+            <h1 id="headline">One event. Everyone’s local time.</h1>
+            <p class="intro">Create a countdown link for a team meeting, a launch, or a get together.</p>
         </header>
         <p id="linkError" role="alert"></p>
-        <section id="existingEventTimer" aria-labelledby="existingEventHeader">
-            <h2 id="existingEventHeader" aria-live="polite" aria-atomic="true"></h2>
-            <p id="eventDesc"></p>
+        <section id="existingEventTimer" class="card" aria-labelledby="guestHeading">
+            <h2 id="guestHeading"><span id="guestFallback">Scheduled event</span><span id="eventDesc"></span></h2>
+            <div class="local-time">
+                <p id="displayTimeLabel">Your local time</p>
+                <p id="existingEventTime"></p>
+            </div>
+            <p id="existingEventHeader" role="status"></p>
             <div id="countdown" aria-live="off">
                 <ul aria-label="Time until the event">
                     <li><span id="days"></span>Days</li>
@@ -25,47 +33,64 @@
                     <li><span id="seconds"></span>Seconds</li>
                 </ul>
             </div>
-            <p id="existingEventTime"></p>
-            <label for="viewerZone">Display timezone</label>
-            <input id="viewerZone" name="viewerZone" list="timeZones" autocomplete="off" aria-describedby="viewerZoneError">
-            <p id="viewerZoneError" role="alert"></p>
+            <div class="field">
+                <label for="viewerZone">Display time zone</label>
+                <input id="viewerZone" name="viewerZone" list="timeZones" autocomplete="off" aria-describedby="viewerZoneError">
+                <p id="viewerZoneError" role="alert"></p>
+            </div>
             <p id="originEventTime"></p>
         </section>
-        <form id="newEventContainer" aria-labelledby="createHeading" novalidate>
+        <form id="newEventContainer" class="card" aria-labelledby="createHeading" novalidate>
             <h2 id="createHeading">Create an event</h2>
-            <label for="eventZone">Event timezone</label>
-            <input id="eventZone" name="eventZone" list="timeZones" aria-describedby="zoneHelp formError" autocomplete="off" required>
-            <datalist id="timeZones"></datalist>
-            <p id="zoneHelp" class="hint">Search for a named timezone, such as Europe/London. Enter the date and time in that zone.</p>
-            <label for="newEvent">Event date and time in the selected timezone</label>
-            <input id="newEvent" name="newEvent" type="datetime-local" aria-describedby="formError" step="60" required>
-            <div id="occurrenceContainer" hidden>
+            <div class="schedule-fields">
+                <div class="field">
+                    <label for="eventZone">Event time zone</label>
+                    <input id="eventZone" name="eventZone" list="timeZones" aria-describedby="zoneHelp formError" autocomplete="off" required>
+                    <datalist id="timeZones"></datalist>
+                    <p id="zoneHelp" class="hint">Search by city or region, like London.</p>
+                </div>
+                <div class="field">
+                    <label for="newEvent">Event date and time</label>
+                    <input id="newEvent" name="newEvent" type="datetime-local" aria-describedby="dateHelp formError" step="60" required>
+                    <p id="dateHelp" class="hint">Enter the time in the event’s time zone.</p>
+                </div>
+            </div>
+            <div id="occurrenceContainer" class="field" hidden>
                 <label for="occurrence">This time occurs twice. Which occurrence?</label>
                 <select id="occurrence" aria-describedby="formError"></select>
             </div>
-            <label for="newEventDesc">Description (optional)</label>
-            <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Game night with friends">
+            <div class="field">
+                <label for="newEventDesc">Description <span class="hint">(optional)</span></label>
+                <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Team demo day">
+            </div>
+            <label class="checkbox-label">
+                <input id="compressLink" name="compressLink" type="checkbox" checked>
+                Compress event link
+            </label>
             <button id="create" type="submit">Create event link</button>
             <p id="formError" role="alert"></p>
             <p id="eventPreview" role="status"></p>
         </form>
-        <section id="linkContainer" aria-labelledby="linkHeading">
+        <section id="linkContainer" class="card" aria-labelledby="linkHeading">
             <h2 id="linkHeading">Your event link</h2>
-            <label for="shareUrl">Shareable link</label>
-            <input id="shareUrl" type="text" readonly>
-            <div id="link"></div>
-            <button id="copyUrl" type="button" disabled>Copy link</button>
+            <div class="field">
+                <label for="shareUrl">Shareable link</label>
+                <input id="shareUrl" type="text" readonly>
+            </div>
+            <div class="share-actions">
+                <div id="link"></div>
+                <button id="copyUrl" type="button" disabled>Copy link</button>
+                <button id="generateQr" class="secondary" type="button">Generate QR code</button>
+            </div>
             <p id="copyStatus" role="status" aria-atomic="true"></p>
+            <p id="qrError" role="alert"></p>
+            <div id="qrResult" hidden>
+                <img id="qrImage" alt="QR code for the event link">
+                <a id="downloadQr" download="event-qr-code.png">Download QR code (PNG)</a>
+                <button id="printQr" class="secondary" type="button">Print QR code</button>
+            </div>
         </section>
-        <section id="help" aria-labelledby="helpHeading">
-            <h2 id="helpHeading">How to share</h2>
-            <ol>
-                <li>Choose the event timezone, date, and time.</li>
-                <li>Create a link and share it with your friends.</li>
-                <li>Each viewer sees the event in their own timezone.</li>
-            </ol>
-            <p class="hint">Links are snapshots. Share a new link if the event changes.</p>
-        </section>
+        <p class="hint share-note">If the event changes, create and share a new link.</p>
     </main>
 </body>
 </html>

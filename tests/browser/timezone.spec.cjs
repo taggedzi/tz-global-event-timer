@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { decodeEvent } = require('../../src/js/event-link');
 test('creator selects London independently of device, then resolves repeated times', async ({ browser }) => {
   const context = await browser.newContext({ timezoneId: 'America/New_York' });
   const page = await context.newPage();
@@ -7,8 +8,9 @@ test('creator selects London independently of device, then resolves repeated tim
   await page.locator('#eventZone').fill('Europe/London');
   await page.locator('#create').click();
   let url = await page.locator('#link a').getAttribute('href');
-  expect(new URL(url).searchParams.get('date')).toBe('2026-01-02T20:00:00.000Z');
-  expect(new URL(url).searchParams.get('zone')).toBe('Europe/London');
+  const londonEvent = decodeEvent(new URL(url).search);
+  expect(londonEvent.date.toISOString()).toBe('2026-01-02T20:00:00.000Z');
+  expect(londonEvent.zone).toBe('Europe/London');
   await expect(page.locator('#eventPreview')).toContainText('Europe/London');
   await page.locator('#eventZone').fill('America/New_York');
   await page.locator('#newEvent').fill('2026-11-01T01:30');
@@ -18,7 +20,7 @@ test('creator selects London independently of device, then resolves repeated tim
   await page.locator('#occurrence').selectOption('1');
   await page.locator('#create').click();
   url = await page.locator('#link a').getAttribute('href');
-  expect(new URL(url).searchParams.get('date')).toBe('2026-11-01T06:30:00.000Z');
+  expect(decodeEvent(new URL(url).search).date.toISOString()).toBe('2026-11-01T06:30:00.000Z');
   await page.locator('#newEvent').fill('2026-03-08T02:30');
   await page.locator('#create').click();
   await expect(page.locator('#formError')).toContainText('does not exist');

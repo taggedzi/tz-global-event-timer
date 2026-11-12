@@ -30,7 +30,15 @@ target; direct build dependencies are declared in package.json and locked.
 
 ## Event link format
 
-New links encode a UTC ISO 8601 instant in `date` (with seconds and optional
+**Compress event link** is checked by default. The app uses the compressed link
+when it is shorter. Clear the checkbox to generate an uncompressed link.
+Both formats carry the full event in the URL and work on a static host.
+
+Compressed links use a `v1` query parameter containing unpadded base64url of raw
+DEFLATE data. The data is a UTF-8 JSON array of the UTC epoch time in
+milliseconds, the description, and the organizer's timezone (or `null`).
+
+Uncompressed links encode a UTC ISO 8601 instant in `date` (with seconds and optional
 three-digit milliseconds) and optional text in `desc`. Valid legacy UTC-string
 links remain readable. Local-time strings, impossible dates, and repeated date
 parameters are rejected with an explanation. Tracking-only links open creation.

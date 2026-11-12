@@ -20,7 +20,6 @@ test('creates a link and displays the same event across viewer timezones', async
   await page.locator('#create').click();
   const url = await page.locator('#link a').getAttribute('href');
   await page.evaluate(async () => { await document.fonts.ready; });
-  expect(Date.parse(new URL(url).searchParams.get('date'))).toBe(Date.parse('2026-01-03T01:00:00Z'));
   const displays = [];
   for (const timezoneId of ['Europe/London', 'Asia/Kolkata']) {
     const viewer = await browser.newContext({ timezoneId, locale: 'en-GB' });
@@ -29,6 +28,7 @@ test('creates a link and displays the same event across viewer timezones', async
     await tab.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
     await tab.clock.setFixedTime(new Date('2026-01-01T00:00:00Z'));
     await tab.goto(url);
+    await expect(tab.locator('#existingEventTime')).toHaveAttribute('data-instant', '2026-01-03T01:00:00.000Z');
     await expect(tab.locator('#eventDesc')).toHaveText('Game night & friends 🎮');
     displays.push(await tab.locator('#existingEventTime').innerText());
     await tab.clock.runFor(200);

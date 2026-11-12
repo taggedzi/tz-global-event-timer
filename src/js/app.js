@@ -4,6 +4,7 @@ const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = requ
 const { formatEventTime } = require('./viewer');
 const { startCountdown } = require('./countdown');
 const { createCopyController } = require('./clipboard');
+const QRCode = require('qrcode');
 const activeApps = new WeakMap();
 
 function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.now(),
@@ -25,12 +26,22 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   for (const zone of supportedTimeZones(intl)) {
     const option = document.createElement('option'); option.value = zone; el('timeZones').appendChild(option);
   }
-  function invalidateCreation() {
+  function clearQrCode() {
+    el('qrResult').hidden = true;
+    el('qrImage').removeAttribute('src');
+    el('downloadQr').removeAttribute('href');
+    el('qrError').textContent = '';
+  }
+  function clearShareLink() {
     el('linkContainer').style.display = 'none';
     el('link').replaceChildren();
     delete el('link').dataset.link;
     el('shareUrl').value = '';
+    clearQrCode();
     copyController?.invalidate();
+  }
+  function invalidateCreation() {
+    clearShareLink();
     el('eventPreview').textContent = '';
     el('occurrenceContainer').hidden = true;
     el('occurrence').replaceChildren();
@@ -38,6 +49,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     for (const id of ['newEvent', 'eventZone', 'occurrence']) el(id).removeAttribute('aria-invalid');
   }
   for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
+  listen(el('compressLink'), 'change', clearShareLink);
+  listen(el('occurrence'), 'change', clearShareLink);
   invalidateCreation();
 
   copyController = createCopyController({
@@ -84,23 +97,51 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     }
     el('newEvent').removeAttribute('aria-invalid');
     el('eventPreview').textContent = choice.label;
-    const url = encodeEventUrl({ date: choice.date, description: el('newEventDesc').value, zone: el('eventZone').value }, location.href);
+    const url = encodeEventUrl({
+      date: choice.date, description: el('newEventDesc').value, zone: el('eventZone').value
+    }, location.href, { compress: el('compressLink').checked });
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.textContent = url;
+    anchor.textContent = 'Open event link';
     el('link').replaceChildren(anchor);
     el('link').dataset.link = url;
     el('shareUrl').value = url;
+    clearQrCode();
     copyController.invalidate();
     el('linkContainer').style.display = 'grid';
   });
   listen(el('copyUrl'), 'click', () => copyController.copy());
+  listen(el('generateQr'), 'click', () => {
+    const url = el('link').dataset.link;
+    if (!url || !el('qrResult').hidden) return;
+
+    // Even a QR code containing only digits cannot fit more than 7,089 characters.
+    if (url.length > 7089) {
+      el('qrError').textContent = 'This link is too long for a QR code. Compress the link or shorten the event description.';
+      return;
+    }
+    QRCode.toDataURL(document.createElement('canvas'), url, { scale: 8, margin: 4 }, (error, imageUrl) => {
+      if (error) {
+        el('qrError').textContent = error.message.includes('too big')
+          ? 'This link is too long for a QR code. Compress the link or shorten the event description.'
+          : 'Could not generate a QR code. You can still copy the event link.';
+        return;
+      }
+      el('qrError').textContent = '';
+      el('qrImage').src = imageUrl;
+      el('downloadQr').href = imageUrl;
+      el('qrResult').hidden = false;
+      el('downloadQr').focus();
+    });
+  });
+  listen(el('printQr'), 'click', () => window.print());
 
   const event = decodeEvent(location.search);
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
   if (event.kind === 'event') {
-    el('existingEventHeader').textContent = 'Currently scheduled event';
-    el('viewerZone').value = detectTimeZone(intl);
+    const localZone = detectTimeZone(intl);
+    el('viewerZone').value = localZone;
+    el('existingEventHeader').textContent = '';
     el('existingEventTime').dataset.instant = event.date.toISOString();
     function renderViewer() {
       const zone = el('viewerZone').value;
@@ -111,6 +152,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       }
       el('viewerZoneError').textContent = '';
       el('viewerZone').removeAttribute('aria-invalid');
+      el('displayTimeLabel').textContent = zone === localZone ? 'Your local time' : 'Event time in selected zone';
       el('existingEventTime').textContent = formatEventTime(event.date, zone, intl, navigator.language);
     }
     renderViewer();
@@ -118,12 +160,13 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     if (event.zone && isTimeZone(event.zone, intl))
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
     el('eventDesc').textContent = event.description;
+    el('guestFallback').hidden = Boolean(event.description.trim());
     el('countdown').style.display = 'block';
     el('existingEventTimer').style.display = 'grid';
     disposeCountdown = startCountdown({ target: event.date.getTime(), now: getNow, setInterval, clearInterval, window,
       render(state) {
         for (const id of ['days', 'hours', 'minutes', 'seconds']) el(id).textContent = String(state[id]);
-        const header = state.started ? 'Event has already started.' : 'Currently scheduled event';
+        const header = state.started ? 'Event has already started.' : '';
         if (el('existingEventHeader').textContent !== header) el('existingEventHeader').textContent = header;
         el('countdown').style.display = state.started ? 'none' : 'block';
       }
