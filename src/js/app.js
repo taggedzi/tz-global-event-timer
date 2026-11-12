@@ -1,122 +1,67 @@
-function initializeApp({ window, flatpickr, now: getNow = () => Date.now(), setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
-    const { document, navigator, location } = window;
-    const tzEventTimer = () => {
-        flatpickr('#newEvent', {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i"
-        })
+const { decodeEvent, encodeEventUrl } = require('./event-link');
+
+function initializeApp({ window, flatpickr, now: getNow = () => Date.now(),
+  setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
+  const { document, navigator, location } = window;
+  const el = id => document.getElementById(id);
+  const picker = flatpickr('#newEvent', { enableTime: true, dateFormat: 'Y-m-d H:i' });
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try { document.execCommand('copy'); } catch (error) { console.error(error); }
+    textArea.remove();
+  }
+  function copyTextToClipboard(text) {
+    if (!navigator.clipboard) return fallbackCopyTextToClipboard(text);
+    navigator.clipboard.writeText(text).catch(error => console.error(error));
+  }
+
+  el('create').addEventListener('click', () => {
+    const date = picker.selectedDates[0];
+    if (!date || !Number.isFinite(date.getTime())) {
+      el('formError').textContent = 'Select a valid event date and time.';
+      el('newEvent').setAttribute('aria-invalid', 'true');
+      el('newEvent').focus();
+      return;
     }
-    tzEventTimer()
+    el('formError').textContent = '';
+    el('newEvent').removeAttribute('aria-invalid');
+    const url = encodeEventUrl({ date, description: el('newEventDesc').value }, location.href);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.textContent = url;
+    el('link').replaceChildren(anchor);
+    el('link').dataset.link = url;
+    el('linkContainer').style.display = 'block';
+  });
+  el('copyUrl').addEventListener('click', () => copyTextToClipboard(el('link').dataset.link));
 
-    function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement("textarea")
-        textArea.value = text
-
-        textArea.style.top = "0"
-        textArea.style.left = "0"
-        textArea.style.position = "fixed"
-
-        document.body.appendChild(textArea)
-        textArea.focus()
-        textArea.select()
-
-        try {
-            var successful = document.execCommand('copy');
-            var msg = successful ? 'successful' : 'unsuccessful'
-            console.log('Fallback: Copying text command was ' + msg)
-        } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err)
-        }
-
-        document.body.removeChild(textArea);
-    }
-
-    function copyTextToClipboard(text) {
-        if (!navigator.clipboard) {
-            fallbackCopyTextToClipboard(text)
-            return
-        }
-        navigator.clipboard.writeText(text).then(function () {
-            console.log('Async: Copying to clipboard was successful!')
-        }, function (err) {
-            console.error('Async: Could not copy text: ', err)
-        })
-    }
-
-    function constructUrl(queryParameters = {}) {
-        let sp = new URLSearchParams(queryParameters);
-        const uri = `${location.protocol}//${location.host}${location.pathname}?${sp.toString()}`
-        return uri
-    }
-
-    // grab all elements used in one go
-    const queryString = window.location.search;
-    const newEventButtonEl = document.getElementById('create')
-    const eventTimeEl = document.getElementById('newEvent')
-    const copyUrlButtonEl = document.getElementById('copyUrl')
-    const linkContainerEl = document.getElementById('linkContainer')
-    const linkEl = document.getElementById('link')
-    let eventDescriptionEl = document.getElementById('newEventDesc')
-    let url = ''
-
-    // Generate the URL on click
-    newEventButtonEl.addEventListener('click', function (event) {
-        if (eventTimeEl.value !== '') {
-            url = constructUrl({
-                'date': new Date(eventTimeEl.value).toUTCString(),
-                'desc': eventDescriptionEl.value
-            })
-            linkEl.innerHTML = `<a href="${url}">${url}</a>`
-            document.getElementById('link').dataset.link = url
-            linkContainerEl.style.display = 'block'
-        } else {
-            throw new Error('Must select a date/time for an event.')
-        }
-    })
-
-    // Add the copy to clipboard listener and copy action
-    copyUrlButtonEl.addEventListener('click', function (event) {
-        copyTextToClipboard(document.getElementById('link').dataset.link)
-    })
-
-    function setupDisplayForEvent(date, description) {
-        document.getElementById('existingEventHeader').innerText = 'Currently Scheduled Event'
-        document.getElementById('existingEventTime').innerText = date.toString()
-        document.getElementById('eventDesc').innerText = description
-        document.getElementById("countdown").style.display = "block"
-        document.getElementById('existingEventTimer').style.display = 'block'
-    }
-
-    // Process the query string
-    if (queryString) {
-        let searchParams = new URLSearchParams(queryString)
-        let date = ''
-
-        if (searchParams.has('date')) {
-            date = new Date(searchParams.get('date'))
-            setupDisplayForEvent(date, searchParams.get('desc'))
-        }
-
-        // Timer Related code
-        const second = 1000,
-            minute = second * 60,
-            hour = minute * 60,
-            day = hour * 24;
-        const countDown = new Date(date).getTime()
-        const cntr = setInterval(function () {
-            const now = getNow(),
-                distance = countDown - now;
-            document.getElementById("days").innerText = Math.floor(distance / (day))
-            document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour))
-            document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute))
-            document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second)
-            if (distance < 0) {
-                document.getElementById("existingEventHeader").innerText = "Event has already started."
-                document.getElementById("countdown").style.display = "none"
-                clearInterval(cntr);
-            }
-        }, 200)
-    }
+  const event = decodeEvent(location.search);
+  if (event.kind === 'invalid') el('linkError').textContent = event.message;
+  if (event.kind === 'event') {
+    el('existingEventHeader').textContent = 'Currently Scheduled Event';
+    el('existingEventTime').textContent = event.date.toString();
+    el('eventDesc').textContent = event.description;
+    el('countdown').style.display = 'block';
+    el('existingEventTimer').style.display = 'block';
+    const target = event.date.getTime();
+    const timer = setInterval(() => {
+      const distance = target - getNow();
+      el('days').textContent = Math.floor(distance / 86400000);
+      el('hours').textContent = Math.floor((distance % 86400000) / 3600000);
+      el('minutes').textContent = Math.floor((distance % 3600000) / 60000);
+      el('seconds').textContent = Math.floor((distance % 60000) / 1000);
+      if (distance < 0) {
+        el('existingEventHeader').textContent = 'Event has already started.';
+        el('countdown').style.display = 'none';
+        clearInterval(timer);
+      }
+    }, 200);
+  }
 }
-
 module.exports = { initializeApp };

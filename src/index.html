@@ -10,6 +10,7 @@
 
 <body>
     <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
+    <p id="linkError" role="alert"></p>
     <div id="existingEventTimer">
         <h2 id="eventDesc"></h2>
         <div id="countdown">
@@ -26,9 +27,10 @@
     <br>
     <div id="newEventContainer">
         <h2>Create your own event!</h2>
-        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly">
+        <input id="newEvent" name="newEvent" type="text" placeholder="Select Date..." readonly="readonly" aria-describedby="formError">
         <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
         <button id="create">Create Event Link</button>
+        <p id="formError" role="alert"></p>
     </div>
     <div id="linkContainer">
         <h2>Here is your link!</h2>
