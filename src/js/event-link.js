@@ -13,8 +13,12 @@ const INVALID_COMPRESSED_EVENT = {
   message: 'This compressed event link is invalid. Ask the organizer for a valid link, or create a new event.'
 };
 
+function descriptionByteLength(description) {
+  return new TextEncoder().encode(description).length;
+}
+
 function descriptionFits(description) {
-  return description.length <= MAX_DESCRIPTION_BYTES && new TextEncoder().encode(description).length <= MAX_DESCRIPTION_BYTES;
+  return description.length <= MAX_DESCRIPTION_BYTES && descriptionByteLength(description) <= MAX_DESCRIPTION_BYTES;
 }
 
 function decodedEvent(date, description, zone) {
@@ -114,4 +118,4 @@ function encodeEventUrl({ date, description = '', zone }, baseUrl, { compress = 
   url.search = '?' + COMPRESSED_EVENT + '=' + encoded;
   return url.href.length < plainUrl.length ? url.href : plainUrl;
 }
-module.exports = { DESCRIPTION_TOO_LONG, descriptionFits, parseEventDate, decodeEvent, encodeEventUrl };
+module.exports = { MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, descriptionByteLength, descriptionFits, parseEventDate, decodeEvent, encodeEventUrl };

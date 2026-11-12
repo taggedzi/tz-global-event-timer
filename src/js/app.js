@@ -1,4 +1,6 @@
-const { DESCRIPTION_TOO_LONG, descriptionFits, decodeEvent, encodeEventUrl } = require('./event-link');
+const {
+  MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, descriptionByteLength, descriptionFits, decodeEvent, encodeEventUrl
+} = require('./event-link');
 const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
 
 const { formatEventTime } = require('./viewer');
@@ -48,10 +50,30 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('formError').textContent = '';
     for (const id of ['newEvent', 'eventZone', 'occurrence', 'newEventDesc']) el(id).removeAttribute('aria-invalid');
   }
-  for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
+  const description = el('newEventDesc');
+  const descriptionUsage = el('descriptionUsage');
+  const descriptionRemaining = el('descriptionRemaining');
+  const formatBytes = new Intl.NumberFormat(navigator.language);
+  descriptionUsage.max = MAX_DESCRIPTION_BYTES;
+  function updateDescriptionUsage() {
+    const used = descriptionByteLength(description.value);
+    const remaining = MAX_DESCRIPTION_BYTES - used;
+    const overLimit = remaining < 0;
+    const count = Math.abs(remaining);
+    const unit = count === 1 ? 'byte' : 'bytes';
+    descriptionUsage.value = Math.min(used, MAX_DESCRIPTION_BYTES);
+    descriptionUsage.parentElement.classList.toggle('over-limit', overLimit);
+    descriptionRemaining.textContent = formatBytes.format(count) + ' ' + unit + (overLimit ? ' over limit' : ' left');
+  }
+  for (const id of ['newEvent', 'eventZone']) listen(el(id), 'input', invalidateCreation);
+  listen(description, 'input', () => {
+    invalidateCreation();
+    updateDescriptionUsage();
+  });
   listen(el('compressLink'), 'change', clearShareLink);
   listen(el('occurrence'), 'change', clearShareLink);
   invalidateCreation();
+  updateDescriptionUsage();
 
   copyController = createCopyController({
     getUrl: () => el('link').dataset.link,
@@ -96,7 +118,6 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       return;
     }
     el('newEvent').removeAttribute('aria-invalid');
-    const description = el('newEventDesc');
     if (!descriptionFits(description.value)) {
       clearShareLink();
       el('formError').textContent = DESCRIPTION_TOO_LONG;

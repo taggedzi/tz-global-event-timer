@@ -63,7 +63,14 @@
             </div>
             <div class="field">
                 <label for="newEventDesc">Description <span class="hint">(optional)</span></label>
-                <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Team demo day" aria-describedby="formError">
+                <textarea id="newEventDesc" name="newEventDesc" rows="3" placeholder="Team demo day" aria-describedby="descriptionHelp descriptionRemaining formError"></textarea>
+                <div class="description-footer">
+                    <p id="descriptionHelp" class="hint">Use plain text. HTML formatting and scripts are unsupported.</p>
+                    <div class="description-usage hint">
+                        <progress id="descriptionUsage" value="0" aria-hidden="true"></progress>
+                        <span id="descriptionRemaining"></span>
+                    </div>
+                </div>
             </div>
             <label class="checkbox-label">
                 <input id="compressLink" name="compressLink" type="checkbox" checked>

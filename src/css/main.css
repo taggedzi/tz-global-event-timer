@@ -53,7 +53,7 @@ p { text-wrap: pretty; }
 #existingEventTime { margin-top: 4px; font-size: 20px; line-height: 28px; font-weight: 600; }
 .schedule-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .field { display: grid; align-content: start; gap: 8px; min-width: 0; }
-input, select, button {
+input, select, textarea, button {
     min-width: 0;
     max-width: 100%;
     min-height: 48px;
@@ -62,9 +62,10 @@ input, select, button {
     font: inherit;
     color: inherit;
 }
-input, select { width: 100%; background: var(--field); padding: 8px 12px; }
+input, select, textarea { width: 100%; background: var(--field); padding: 8px 12px; }
+textarea { resize: vertical; }
 input[type="datetime-local"] { appearance: none; }
-input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--error); }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--error); }
 .checkbox-label { display: flex; align-items: center; gap: 8px; min-height: 24px; cursor: pointer; }
 .checkbox-label input { width: 16px; height: 16px; min-height: 0; margin: 0; padding: 0; cursor: inherit; accent-color: var(--accent); }
 button {
@@ -85,6 +86,11 @@ a { color: var(--accent); overflow-wrap: anywhere; text-underline-offset: 4px; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .hint, #originEventTime { font-size: 14px; line-height: 20px; color: var(--muted); font-weight: 400; }
+.description-footer { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.description-usage { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.description-usage progress { width: 48px; height: 8px; accent-color: var(--accent); }
+.description-usage.over-limit { color: var(--error); }
+.description-usage.over-limit progress { accent-color: var(--error); }
 .share-note { padding-inline: 16px; }
 .share-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 #link { margin-right: auto; }
