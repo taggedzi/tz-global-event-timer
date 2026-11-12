@@ -1,66 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Share an event link that shows the correct local time and countdown for every viewer.">
     <title><%= htmlWebpackPlugin.options.title %></title>
 </head>
-
 <body>
-    <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
-    <p id="linkError" role="alert"></p>
-    <div id="existingEventTimer">
-        <h2 id="eventDesc"></h2>
-        <div id="countdown" aria-live="off">
-            <ul>
-                <li><span id="days"></span>days</li>
-                <li><span id="hours"></span>Hours</li>
-                <li><span id="minutes"></span>Minutes</li>
-                <li><span id="seconds"></span>Seconds</li>
-            </ul>
-        </div>
-        <h2 id="existingEventHeader" aria-live="polite" aria-atomic="true"></h2>
-        <div id="existingEventTime"></div>
-        <label for="viewerZone">Display timezone</label>
-        <input id="viewerZone" name="viewerZone" list="timeZones" autocomplete="off" aria-describedby="viewerZoneError">
-        <p id="viewerZoneError" role="alert"></p>
-        <p id="originEventTime"></p>
-    </div>
-    <br>
-    <div id="newEventContainer">
-        <h2>Create your own event!</h2>
-        <label for="eventZone">Event timezone</label>
-        <input id="eventZone" name="eventZone" list="timeZones" aria-describedby="zoneHelp formError" autocomplete="off">
-        <datalist id="timeZones"></datalist>
-        <p id="zoneHelp">Choose a named timezone, such as Europe/London. The date and time below belong to this zone.</p>
-        <label for="newEvent">Event date and time in the selected timezone</label>
-        <input id="newEvent" name="newEvent" type="datetime-local" aria-describedby="formError" step="60">
-        <div id="occurrenceContainer" hidden>
-            <label for="occurrence">This time occurs twice. Which occurrence?</label>
-            <select id="occurrence" aria-describedby="formError"></select>
-        </div>
-        <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Event Description... (optional)">
-        <button id="create">Create Event Link</button>
-        <p id="formError" role="alert"></p>
-        <p id="eventPreview" role="status"></p>
-    </div>
-    <div id="linkContainer">
-        <h2>Here is your link!</h2>
-        <div id="link"></div>
-        <button id="copyUrl">&#128203; Copy to clipboard</button>
-    </div>
-    <div id="help">
-        <p>How to use:</p>
-        <ol>
-            <li>Pick a Date/Time and optionally give a breif name for the event.</li>
-            <li>Click the "Create Event Link" button.</li>
-            <li>You will be presented with a URL link.</li>
-            <li>Copy this link and distribute to friends.</li>
-        </ol> 
-        <p>When anyone visits the link it will convert your events time
-            to the local time zone of their device.</p>
-    </div>
+    <a class="skip-link" href="#main">Skip to event timer</a>
+    <main id="main" tabindex="-1">
+        <header>
+            <h1 id="headline"><%= htmlWebpackPlugin.options.title %></h1>
+            <p>One event link. The right local time for everyone.</p>
+        </header>
+        <p id="linkError" role="alert"></p>
+        <section id="existingEventTimer" aria-labelledby="existingEventHeader">
+            <h2 id="existingEventHeader" aria-live="polite" aria-atomic="true"></h2>
+            <p id="eventDesc"></p>
+            <div id="countdown" aria-live="off">
+                <ul aria-label="Time until the event">
+                    <li><span id="days"></span>Days</li>
+                    <li><span id="hours"></span>Hours</li>
+                    <li><span id="minutes"></span>Minutes</li>
+                    <li><span id="seconds"></span>Seconds</li>
+                </ul>
+            </div>
+            <p id="existingEventTime"></p>
+            <label for="viewerZone">Display timezone</label>
+            <input id="viewerZone" name="viewerZone" list="timeZones" autocomplete="off" aria-describedby="viewerZoneError">
+            <p id="viewerZoneError" role="alert"></p>
+            <p id="originEventTime"></p>
+        </section>
+        <form id="newEventContainer" aria-labelledby="createHeading" novalidate>
+            <h2 id="createHeading">Create an event</h2>
+            <label for="eventZone">Event timezone</label>
+            <input id="eventZone" name="eventZone" list="timeZones" aria-describedby="zoneHelp formError" autocomplete="off" required>
+            <datalist id="timeZones"></datalist>
+            <p id="zoneHelp" class="hint">Search for a named timezone, such as Europe/London. Enter the date and time in that zone.</p>
+            <label for="newEvent">Event date and time in the selected timezone</label>
+            <input id="newEvent" name="newEvent" type="datetime-local" aria-describedby="formError" step="60" required>
+            <div id="occurrenceContainer" hidden>
+                <label for="occurrence">This time occurs twice. Which occurrence?</label>
+                <select id="occurrence" aria-describedby="formError"></select>
+            </div>
+            <label for="newEventDesc">Description (optional)</label>
+            <input id="newEventDesc" name="newEventDesc" type="text" placeholder="Game night with friends">
+            <button id="create" type="submit">Create event link</button>
+            <p id="formError" role="alert"></p>
+            <p id="eventPreview" role="status"></p>
+        </form>
+        <section id="linkContainer" aria-labelledby="linkHeading">
+            <h2 id="linkHeading">Your event link</h2>
+            <div id="link"></div>
+            <button id="copyUrl" type="button">Copy link</button>
+        </section>
+        <section id="help" aria-labelledby="helpHeading">
+            <h2 id="helpHeading">How to share</h2>
+            <ol>
+                <li>Choose the event timezone, date, and time.</li>
+                <li>Create a link and share it with your friends.</li>
+                <li>Each viewer sees the event in their own timezone.</li>
+            </ol>
+            <p class="hint">Links are snapshots. Share a new link if the event changes.</p>
+        </section>
+    </main>
 </body>
 </html>

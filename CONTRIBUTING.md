@@ -34,3 +34,15 @@ will cover invalid links, DST, viewer overrides, countdown boundaries, and copy 
 For cross-browser link compatibility, install Firefox and WebKit with
 `npx playwright install firefox webkit`, then run `npm run test:compat` after
 a production build. CI stays on Chromium for the fast core flow and regressions.
+
+## Accessibility verification
+
+Automated checks cover 320px, 375px, and desktop layouts with long descriptions
+and URLs, accessible names, inline error focus, Enter submission, visible keyboard
+focus, and native occurrence selection. Axe checks detect common accessibility
+violations, and mobile/desktop screenshots are inspected for layout problems.
+
+Physical keyboard and screen-reader spot checks were unavailable in this agent
+environment. Native date/time and datalist popovers vary by browser and OS; their
+screen-reader behavior still needs a human spot check. Passing automated checks
+is not a claim of complete accessibility.

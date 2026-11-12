@@ -50,7 +50,7 @@ test('destroy and reinitialize release timers and event listeners', t => {
   view.app.destroy();
   replacement.destroy();
   assert.equal(view.callbacks.size, 0);
-  view.document.getElementById('create').click();
+  view.document.getElementById('newEventContainer').dispatchEvent(new view.window.Event('submit', { bubbles: true, cancelable: true }));
   assert.equal(text(view,'formError'), '');
   view.window.dispatchEvent(new view.window.Event('focus'));
   assert.equal(view.callbacks.size, 0);
