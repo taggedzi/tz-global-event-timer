@@ -15,3 +15,13 @@ Licensed under the [MIT License](LICENSE).
 Use Node.js 24 LTS. Run `npm ci` and `npx playwright install chromium`, then
 `npm run check` to run unit tests, build, and the Chromium smoke test. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the lightweight TDD workflow.
+
+## Building and hosting
+
+`npm run build` creates a production site in `dist/` and exits; `npm run prod`
+is retained as an alias for compatibility. `npm run build:dev` makes a one-shot
+development build. `npm run dev` watches source files; stop it with Ctrl+C.
+Use `npm run serve` in another terminal to serve the built files locally.
+Deploy the contents of `dist/` to a static HTTP(S) host; Node is build tooling,
+not a required production server. Node 24 LTS is the documented development/CI
+target; direct build dependencies are declared in package.json and locked.
