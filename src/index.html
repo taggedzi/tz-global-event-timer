@@ -51,8 +51,11 @@
         </form>
         <section id="linkContainer" aria-labelledby="linkHeading">
             <h2 id="linkHeading">Your event link</h2>
+            <label for="shareUrl">Shareable link</label>
+            <input id="shareUrl" type="text" readonly>
             <div id="link"></div>
-            <button id="copyUrl" type="button">Copy link</button>
+            <button id="copyUrl" type="button" disabled>Copy link</button>
+            <p id="copyStatus" role="status" aria-atomic="true"></p>
         </section>
         <section id="help" aria-labelledby="helpHeading">
             <h2 id="helpHeading">How to share</h2>
