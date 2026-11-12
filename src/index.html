@@ -20,7 +20,16 @@
             <p class="intro">Create a countdown link for a team meeting, a launch, or a get together.</p>
         </header>
         <p id="linkError" role="alert"></p>
-        <section id="existingEventTimer" class="card" aria-label="Scheduled event">
+        <form id="unlockEventForm" class="card" aria-labelledby="unlockHeading" hidden>
+            <h2 id="unlockHeading">Password protected event</h2>
+            <div class="field">
+                <label for="unlockPassword">Event password</label>
+                <input id="unlockPassword" type="password" autocomplete="off" aria-describedby="unlockError" required>
+                <p id="unlockError" role="alert"></p>
+            </div>
+            <button id="unlockEventButton" type="submit">Unlock event</button>
+        </form>
+        <section id="existingEventTimer" class="card" aria-label="Scheduled event" tabindex="-1">
             <div class="event-overview">
                 <div class="event-actions" role="group" aria-label="Event actions">
                     <button id="downloadEventText" class="secondary" type="button" aria-label="Download text" title="Download text">
@@ -103,6 +112,11 @@
                 <input id="compressLink" name="compressLink" type="checkbox" checked>
                 Compress event link
             </label>
+            <div id="linkPasswordField" class="field" hidden>
+                <label for="linkPassword">Protect with a password <span class="hint">(optional)</span></label>
+                <input id="linkPassword" type="password" autocomplete="new-password" aria-describedby="passwordHelp">
+                <p id="passwordHelp" class="hint">Leave blank to create a public link. Share the password separately. Anyone with the link can try password guesses offline. Password protection cannot guarantee privacy. The site owner assumes no responsibility if someone guesses the password.</p>
+            </div>
             <button id="create" type="submit">Create event link</button>
             <p id="formError" role="alert"></p>
             <p id="eventPreview" role="status"></p>

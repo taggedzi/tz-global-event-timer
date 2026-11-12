@@ -1,5 +1,6 @@
 const {
-  MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, descriptionByteLength, descriptionFits, decodeEvent, encodeEventUrl
+  MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, CRYPTO_UNAVAILABLE, descriptionByteLength, descriptionFits,
+  decodeEvent, encodeEventUrl, isProtectedEventLink, readProtectedEventLink, encodeProtectedEventUrl, unlockEvent
 } = require('./event-link');
 const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
 
@@ -17,13 +18,36 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   let disposeCountdown;
   let copyController;
   let eventCopyController;
+  let destroyed = false;
+  let shareRevision = 0;
   function listen(target, type, handler) {
     target.addEventListener(type, handler);
     listeners.push(() => target.removeEventListener(type, handler));
   }
   const el = id => document.getElementById(id);
+  const initialHash = location.hash;
+  const protectedLink = isProtectedEventLink(initialHash);
+  const linkPassword = el('linkPassword');
+  const createButton = el('create');
+  const unlockForm = el('unlockEventForm');
+  const unlockPassword = el('unlockPassword');
+  const unlockButton = el('unlockEventButton');
+  linkPassword.value = '';
+  el('linkPasswordField').hidden = false;
+  unlockForm.hidden = true;
+  unlockPassword.value = '';
+  unlockPassword.readOnly = false;
+  unlockPassword.removeAttribute('aria-invalid');
+  el('unlockError').textContent = '';
+  unlockButton.disabled = false;
+  unlockButton.textContent = 'Unlock event';
   el('existingEventTimer').style.removeProperty('display');
-  el('eventPrintText').textContent = '';
+  for (const id of ['eventDesc', 'existingEventTime', 'originEventTime', 'eventPrintText']) el(id).textContent = '';
+  delete el('existingEventTime').dataset.instant;
+  el('eventCopyText').value = '';
+  el('eventCopyFallback').hidden = true;
+  el('copyEventText').disabled = false;
+  el('eventCopyStatus').textContent = '';
   el('linkError').textContent = '';
   el('eventZone').value = detectTimeZone(intl);
   el('timeZones').replaceChildren();
@@ -37,6 +61,9 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('qrError').textContent = '';
   }
   function clearShareLink() {
+    shareRevision++;
+    createButton.disabled = false;
+    createButton.textContent = 'Create event link';
     el('linkContainer').style.display = 'none';
     el('link').replaceChildren();
     delete el('link').dataset.link;
@@ -74,6 +101,10 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   });
   listen(el('compressLink'), 'change', clearShareLink);
   listen(el('occurrence'), 'change', clearShareLink);
+  listen(linkPassword, 'input', () => {
+    clearShareLink();
+    el('formError').textContent = '';
+  });
   invalidateCreation();
   updateDescriptionUsage();
 
@@ -92,8 +123,10 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   });
   copyController.invalidate();
 
-  listen(el('newEventContainer'), 'submit', event => {
+  listen(el('newEventContainer'), 'submit', async event => {
     event.preventDefault();
+    if (createButton.disabled) return;
+    clearShareLink();
     const result = resolveWallTime(el('newEvent').value, el('eventZone').value);
     let choice = result.choices[0];
     let message = '';
@@ -130,9 +163,37 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     }
     description.removeAttribute('aria-invalid');
     el('eventPreview').textContent = choice.label;
-    const url = encodeEventUrl({
+    const details = {
       date: choice.date, description: description.value, zone: el('eventZone').value
-    }, location.href, { compress: el('compressLink').checked });
+    };
+    const compress = el('compressLink').checked;
+    const password = linkPassword.value;
+    const revision = shareRevision;
+    let url;
+    try {
+      if (password) {
+        if (!window.crypto?.subtle) {
+          el('formError').textContent = CRYPTO_UNAVAILABLE;
+          return;
+        }
+        createButton.disabled = true;
+        createButton.textContent = 'Protecting link…';
+        url = await encodeProtectedEventUrl(details, location.href, { compress, password, crypto: window.crypto });
+      } else {
+        url = encodeEventUrl(details, location.href, { compress });
+      }
+    } catch (error) {
+      if (!destroyed && revision === shareRevision) {
+        el('formError').textContent = password ? 'Could not protect this link. Try creating it again.' : error.message;
+      }
+      return;
+    } finally {
+      if (!destroyed && revision === shareRevision) {
+        createButton.disabled = false;
+        createButton.textContent = 'Create event link';
+      }
+    }
+    if (destroyed || revision !== shareRevision) return;
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.textContent = 'Open event link';
@@ -154,6 +215,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       return;
     }
     QRCode.toDataURL(document.createElement('canvas'), url, { scale: 8, margin: 4 }, (error, imageUrl) => {
+        if (destroyed || el('link').dataset.link !== url) return;
       if (error) {
         el('qrError').textContent = error.message.includes('too big')
           ? 'This link is too long for a QR code. Compress the link or shorten the event description.'
@@ -175,9 +237,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     window.print();
   });
 
-  const event = decodeEvent(location.search);
-  if (event.kind === 'invalid') el('linkError').textContent = event.message;
-  if (event.kind === 'event') {
+  function showEvent(event) {
     const localZone = detectTimeZone(intl);
     const hasDescription = Boolean(event.description.trim());
     const printText = el('eventPrintText');
@@ -249,7 +309,65 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       }
     });
   }
-  let destroyed = false;
+  listen(window, 'hashchange', () => {
+    const openingProtectedLink = isProtectedEventLink(location.hash);
+    if (location.hash === initialHash || (!protectedLink && !openingProtectedLink)) return;
+    // Firefox can restore the creator's form values across this reload.
+    if (openingProtectedLink) el('newEventContainer').reset();
+    location.reload();
+  });
+  if (protectedLink) {
+    // Keep the fragment intact when navigating to the main content.
+    listen(document.querySelector('.skip-link'), 'click', event => {
+      event.preventDefault();
+      el('main').focus();
+    });
+    const payload = readProtectedEventLink(initialHash);
+    if (!payload) {
+      el('linkError').textContent = 'This password protected link is invalid. Ask the organizer for a new link.';
+    } else if (!window.crypto?.subtle) {
+      el('linkError').textContent = CRYPTO_UNAVAILABLE;
+    } else {
+      unlockForm.hidden = false;
+      listen(unlockPassword, 'input', () => {
+        unlockPassword.removeAttribute('aria-invalid');
+        el('unlockError').textContent = '';
+      });
+      listen(unlockForm, 'submit', async event => {
+        event.preventDefault();
+        if (unlockButton.disabled || !unlockPassword.value) return;
+        unlockButton.disabled = true;
+        unlockPassword.readOnly = true;
+        unlockButton.textContent = 'Unlocking event…';
+        unlockPassword.removeAttribute('aria-invalid');
+        el('unlockError').textContent = '';
+        let result;
+        try {
+          result = await unlockEvent(payload, unlockPassword.value, window.crypto);
+        } catch {
+          // A wrong password and tampered ciphertext both fail authentication.
+        }
+        if (destroyed || location.hash !== initialHash) return;
+        unlockPassword.value = '';
+        unlockPassword.readOnly = false;
+        unlockButton.disabled = false;
+        unlockButton.textContent = 'Unlock event';
+        if (result?.kind !== 'event') {
+          el('unlockError').textContent = 'Could not unlock this event. Check the password or ask the organizer for a new link.';
+          unlockPassword.setAttribute('aria-invalid', 'true');
+          unlockPassword.focus();
+          return;
+        }
+        unlockForm.hidden = true;
+        showEvent(result);
+        el('existingEventTimer').focus();
+      });
+    }
+  } else {
+    const event = decodeEvent(location.search);
+    if (event.kind === 'invalid') el('linkError').textContent = event.message;
+    if (event.kind === 'event') showEvent(event);
+  }
   const app = { destroy() {
     if (destroyed) return;
     destroyed = true;

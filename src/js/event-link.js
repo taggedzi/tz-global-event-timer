@@ -7,6 +7,14 @@ const MAX_EVENT_BYTES = 1024 * 1024;
 const MAX_DESCRIPTION_BYTES = 4096;
 // Percent encoding can triple the description size. Leave room for the date and zone.
 const MAX_QUERY_LENGTH = 13 * 1024;
+// p1 contains a 16-byte salt, a 12-byte IV, and an AES-GCM ciphertext (including its 16-byte tag).
+// Its plaintext is the existing event query. The prefix fixes the key derivation parameters.
+const PROTECTED_EVENT = '#p1=';
+const SALT_BYTES = 16;
+const IV_BYTES = 12;
+const TAG_BYTES = 16;
+const MAX_PROTECTED_BYTES = SALT_BYTES + IV_BYTES + TAG_BYTES + MAX_QUERY_LENGTH;
+const CRYPTO_UNAVAILABLE = 'Password protection requires a browser with Web Crypto on a secure connection.';
 const DESCRIPTION_TOO_LONG = 'Shorten the event description to 4,096 bytes or less.';
 const INVALID_COMPRESSED_EVENT = {
   kind: 'invalid',
@@ -19,6 +27,18 @@ function descriptionByteLength(description) {
 
 function descriptionFits(description) {
   return description.length <= MAX_DESCRIPTION_BYTES && descriptionByteLength(description) <= MAX_DESCRIPTION_BYTES;
+}
+
+function toBase64Url(bytes) {
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(encoded) {
+  return Uint8Array.from(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
 }
 
 function decodedEvent(date, description, zone) {
@@ -53,7 +73,7 @@ function decodeCompressedEvent(params) {
       !/^[A-Za-z0-9_-]+$/.test(encoded)) return INVALID_COMPRESSED_EVENT;
 
   try {
-    const bytes = Uint8Array.from(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
+    const bytes = fromBase64Url(encoded);
     const decoder = new TextDecoder('utf-8', { fatal: true });
     let length = 0;
     let json = '';
@@ -110,12 +130,63 @@ function encodeEventUrl({ date, description = '', zone }, baseUrl, { compress = 
 
   const bytes = deflateSync(data, { level: 9 });
   if (bytes.length > MAX_EVENT_BYTES) return plainUrl;
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += 8192) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
-  }
-  const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  url.search = '?' + COMPRESSED_EVENT + '=' + encoded;
+  url.search = '?' + COMPRESSED_EVENT + '=' + toBase64Url(bytes);
   return url.href.length < plainUrl.length ? url.href : plainUrl;
 }
-module.exports = { MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, descriptionByteLength, descriptionFits, parseEventDate, decodeEvent, encodeEventUrl };
+
+function isProtectedEventLink(hash) {
+  return hash.startsWith(PROTECTED_EVENT);
+}
+
+function readProtectedEventLink(hash) {
+  const encoded = hash.slice(PROTECTED_EVENT.length);
+  if (encoded.length > Math.ceil(MAX_PROTECTED_BYTES * 4 / 3) || !/^[A-Za-z0-9_-]+$/.test(encoded)) return null;
+  try {
+    const bytes = fromBase64Url(encoded);
+    const headerBytes = SALT_BYTES + IV_BYTES;
+    if (bytes.length <= headerBytes + TAG_BYTES || bytes.length > MAX_PROTECTED_BYTES ||
+        toBase64Url(bytes) !== encoded) return null;
+    return {
+      salt: bytes.subarray(0, SALT_BYTES),
+      iv: bytes.subarray(SALT_BYTES, headerBytes),
+      ciphertext: bytes.subarray(headerBytes)
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function deriveEventKey(crypto, password, salt, usage) {
+  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 600_000 },
+    material, { name: 'AES-GCM', length: 256 }, false, [usage]
+  );
+}
+
+async function encodeProtectedEventUrl(event, baseUrl, { compress, password, crypto }) {
+  const url = new URL(encodeEventUrl(event, baseUrl, { compress }));
+  const plaintext = new TextEncoder().encode(url.search);
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const key = await deriveEventKey(crypto, password, salt, 'encrypt');
+  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext));
+  const bytes = new Uint8Array(salt.length + iv.length + ciphertext.length);
+  bytes.set(salt);
+  bytes.set(iv, salt.length);
+  bytes.set(ciphertext, salt.length + iv.length);
+  url.search = '';
+  url.hash = PROTECTED_EVENT + toBase64Url(bytes);
+  return url.href;
+}
+
+async function unlockEvent({ salt, iv, ciphertext }, password, crypto) {
+  const key = await deriveEventKey(crypto, password, salt, 'decrypt');
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+  return decodeEvent(new TextDecoder('utf-8', { fatal: true }).decode(plaintext));
+}
+
+module.exports = {
+  MAX_DESCRIPTION_BYTES, DESCRIPTION_TOO_LONG, CRYPTO_UNAVAILABLE, descriptionByteLength, descriptionFits,
+  parseEventDate, decodeEvent, encodeEventUrl, isProtectedEventLink, readProtectedEventLink, encodeProtectedEventUrl, unlockEvent
+};

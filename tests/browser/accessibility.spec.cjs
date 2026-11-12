@@ -35,6 +35,8 @@ test('labels, keyboard submission, and error focus are usable', async ({ page })
   await description.press('Tab');
   await expect(page.getByRole('checkbox', { name: 'Compress event link' })).toBeFocused();
   await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Protect with a password (optional)')).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Create event link', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#link a')).toBeVisible();
@@ -52,6 +54,7 @@ test('labels, keyboard submission, and error focus are usable', async ({ page })
   await page.locator('#occurrence').press('Tab');
   await expect(description).toBeFocused();
   await description.press('Tab');
+  await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
   await page.keyboard.press('Enter');
   await expect(page.locator('#link a')).toBeVisible();

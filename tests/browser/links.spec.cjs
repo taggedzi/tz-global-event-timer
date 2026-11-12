@@ -74,3 +74,54 @@ test('new and legacy links display safely and invalid links recover', async ({ p
   await page.locator('#create').click();
   await expect(page.locator('#formError')).toContainText('Select');
 });
+
+test('password protected links hide the event until unlocked and reject tampering', async ({ page }) => {
+  const description = 'Private demo 🎮 <img src=x onerror=alert(1)>';
+  const password = 'plum lantern comet moss';
+  await page.goto('/');
+  await page.locator('#eventZone').fill('Europe/London');
+  await page.locator('#newEvent').fill('2030-07-01T20:00');
+  await page.locator('#newEventDesc').fill(description);
+  await page.getByLabel('Protect with a password (optional)').fill(password);
+  await expect(page.locator('#passwordHelp')).toContainText('offline');
+  await page.getByRole('button', { name: 'Create event link' }).click();
+  const openLink = page.getByRole('link', { name: 'Open event link' });
+  await expect(openLink).toBeVisible();
+  const url = new URL(await page.locator('#shareUrl').inputValue());
+  expect(url.search).toBe('');
+  expect(url.hash).toMatch(/^#p1=[\w-]+$/);
+  expect(url.href).not.toContain(encodeURIComponent(password));
+  expect(url.href).not.toContain(encodeURIComponent('2030-07-01T19:00:00.000Z'));
+
+  await openLink.click();
+  const unlock = page.getByLabel('Event password', { exact: true });
+  const timer = page.locator('#existingEventTimer');
+  await expect(unlock).toBeVisible();
+  await expect(timer).toBeHidden();
+  await expect(page.locator('#eventDesc')).toBeEmpty();
+  await expect(page.locator('#newEventDesc')).toHaveValue('');
+  await unlock.fill('wrong password');
+  await unlock.press('Enter');
+  await expect(page.locator('#unlockError')).toContainText('Check the password');
+  await expect(timer).toBeHidden();
+  await unlock.fill(password);
+  await unlock.press('Enter');
+  await expect(timer).toBeVisible();
+  await expect(unlock).toBeHidden();
+  await expect(page.locator('#eventDesc')).toHaveText(description);
+  await expect(page.locator('#eventDesc img')).toHaveCount(0);
+  await expect(page.locator('#existingEventTime')).toHaveAttribute('data-instant', '2030-07-01T19:00:00.000Z');
+  await expect(page.locator('#originEventTime')).toContainText('Europe/London');
+
+  // Change one character within the ciphertext while keeping the URL well formed.
+  const offset = 50;
+  url.hash = url.hash.slice(0, offset) + (url.hash[offset] === 'A' ? 'B' : 'A') + url.hash.slice(offset + 1);
+  await page.goto(url.href);
+  await expect(unlock).toBeVisible();
+  await expect(timer).toBeHidden();
+  await unlock.fill(password);
+  await unlock.press('Enter');
+  await expect(page.locator('#unlockError')).toContainText('Could not unlock');
+  await expect(timer).toBeHidden();
+  await expect(page.locator('#eventDesc')).toBeEmpty();
+});
