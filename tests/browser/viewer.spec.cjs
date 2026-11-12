@@ -1,6 +1,27 @@
 const { test, expect } = require('@playwright/test');
 const { readFile } = require('node:fs/promises');
 
+test('event details appear below the controls, local time, and future countdown', async ({ page }) => {
+  await page.clock.install({ time: new Date('2028-01-01T19:59:00Z') });
+  await page.clock.pauseAt(new Date('2028-01-01T19:59:50Z'));
+  await page.goto('/?date=2028-01-01T20:00:00Z&desc=Game+night');
+  const countdown = page.locator('#countdown');
+  const description = page.locator('#eventDesc');
+  for (const width of [375, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    const actions = await page.getByRole('group', { name: 'Event actions' }).boundingBox();
+    const time = await page.locator('.local-time').boundingBox();
+    const remaining = await countdown.boundingBox();
+    const text = await description.boundingBox();
+    expect(actions.y + actions.height).toBeLessThanOrEqual(time.y);
+    expect(time.y + time.height).toBeLessThanOrEqual(remaining.y);
+    expect(remaining.y + remaining.height).toBeLessThanOrEqual(text.y);
+  }
+  await page.clock.fastForward(10_000);
+  await expect(countdown).toBeHidden();
+  await expect(description).toBeVisible();
+});
+
 test('event text exports use the displayed date and time and preserve the description', async ({ page }) => {
   const description = 'Game night 🎮\nBring snacks & drinks.';
   await page.addInitScript(() => {
@@ -13,14 +34,10 @@ test('event text exports use the displayed date and time and preserve the descri
     window.print = () => { window.printCalled = true; };
   });
   await page.goto('/?' + new URLSearchParams({ date: '2028-01-01T20:00:00Z', desc: description }));
-  const zone = page.getByLabel('Display time zone');
-  await zone.fill('UTC');
-  await zone.press('Tab');
+  const zone = page.getByRole('combobox', { name: 'Display time zone' });
+  await zone.selectOption('UTC');
   const expected = (await page.locator('#existingEventTime').textContent()) + '\n\n' + description;
   expect(expected).toMatch(/20:00:00 .*\(UTC\)/);
-  await zone.fill('Invalid/Zone');
-  await zone.press('Tab');
-  await expect(page.locator('#viewerZoneError')).toContainText('last valid time');
 
   const copy = page.getByRole('button', { name: 'Copy text' });
   await copy.click();
@@ -61,22 +78,25 @@ test('detected viewer zones handle year rollover, offsets, and manual override',
     await page.clock.setFixedTime(new Date('2026-01-01T00:00:00Z'));
     await page.goto('/?' + new URLSearchParams({ date: '2026-12-31T23:30:00.000Z', zone: 'Europe/London' }));
     await expect(page.getByRole('heading', { name: 'Scheduled event' })).toBeVisible();
-    await expect(page.locator('#displayTimeLabel')).toHaveText('Your local time');
+    await expect(page.locator('#displayTimeLabel')).toHaveText('The event in your local time');
     await expect(page.locator('#existingEventTime')).toContainText(year);
     await expect(page.locator('#existingEventTime')).toContainText(hour);
     const detectedZone = await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
-    await expect(page.locator('#viewerZone')).toHaveValue(detectedZone);
+    const zone = page.getByRole('combobox', { name: 'Display time zone' });
+    await expect(zone).toHaveValue(detectedZone);
     await expect(page.locator('#existingEventTime')).toContainText(detectedZone);
     await page.clock.runFor(200);
     const countdown = await page.locator('#countdown').innerText();
-    await page.locator('#viewerZone').fill('UTC');
-    await page.locator('#viewerZone').press('Tab');
+    await zone.selectOption('UTC');
     await expect(page.locator('#displayTimeLabel')).toHaveText('Event time in selected zone');
     await expect(page.locator('#existingEventTime')).toContainText('23:30:00');
     await expect(page.locator('#existingEventTime')).toContainText('(UTC)');
     await expect(page.locator('#originEventTime')).toContainText('Europe/London');
     expect(await page.locator('#existingEventTime').getAttribute('data-instant')).toBe('2026-12-31T23:30:00.000Z');
     expect(await page.locator('#countdown').innerText()).toBe(countdown);
+    await zone.selectOption({ label: `Your local time (${detectedZone})` });
+    await expect(page.locator('#displayTimeLabel')).toHaveText('The event in your local time');
+    await expect(page.locator('#existingEventTime')).toContainText(hour);
     await page.goto('/?date=2026-03-15T12:00:00.000Z');
     const springTime = timezoneId === 'America/New_York' ? '08:00:00' : timezoneId === 'Europe/London' ? '12:00:00' : '17:30:00';
     await expect(page.locator('#existingEventTime')).toContainText(springTime);

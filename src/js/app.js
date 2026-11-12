@@ -51,7 +51,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   el('linkError').textContent = '';
   el('eventZone').value = detectTimeZone(intl);
   el('timeZones').replaceChildren();
-  for (const zone of supportedTimeZones(intl)) {
+  const timeZones = supportedTimeZones(intl);
+  for (const zone of timeZones) {
     const option = document.createElement('option'); option.value = zone; el('timeZones').appendChild(option);
   }
   function clearQrCode() {
@@ -270,19 +271,18 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       window.print();
     });
     listen(window, 'afterprint', clearEventPrintMode);
-    el('viewerZone').value = localZone;
+    const viewerZone = el('viewerZone');
+    viewerZone.replaceChildren(
+      new window.Option(`Your local time (${localZone})`, localZone),
+      ...timeZones.filter(zone => zone !== localZone).map(zone => new window.Option(zone, zone))
+    );
+    viewerZone.value = localZone;
     el('existingEventHeader').textContent = '';
     el('existingEventTime').dataset.instant = event.date.toISOString();
     function renderViewer() {
-      const zone = el('viewerZone').value;
-      if (!isTimeZone(zone, intl)) {
-        el('viewerZoneError').textContent = 'Choose a valid named timezone. The last valid time is still shown.';
-        el('viewerZone').setAttribute('aria-invalid', 'true');
-        return;
-      }
-      el('viewerZoneError').textContent = '';
-      el('viewerZone').removeAttribute('aria-invalid');
-      el('displayTimeLabel').textContent = zone === localZone ? 'Your local time' : 'Event time in selected zone';
+      const zone = viewerZone.value;
+      if (!zone) return;
+      el('displayTimeLabel').textContent = zone === localZone ? 'The event in your local time' : 'Event time in selected zone';
       const formattedTime = formatEventTime(event.date, zone, intl, navigator.language);
       el('existingEventTime').textContent = formattedTime;
       const text = hasDescription ? formattedTime + '\n\n' + event.description : formattedTime;
@@ -292,7 +292,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       }
     }
     renderViewer();
-    listen(el('viewerZone'), 'change', renderViewer);
+    listen(viewerZone, 'change', renderViewer);
     if (event.zone && isTimeZone(event.zone, intl))
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
     el('eventDesc').textContent = event.description;

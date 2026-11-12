@@ -122,8 +122,9 @@ You can omit `desc` or `zone`. When creating links in code, use
 
 ## Viewing and exporting an event
 
-The event page labels the detected browser timezone. Change **Display time zone**
-to view another zone without changing the event or countdown. Organizer time
+The event page starts in your browser's local time. Use the **Display time zone**
+dropdown to view another zone or return to your local time. The countdown still
+tracks the same event instant. Organizer time
 appears when the link includes valid origin-zone metadata. If browser timezone
 detection/formatting is unavailable, the page falls back to labeled UTC.
 No geolocation permission, IP lookup, or saved preference is required.

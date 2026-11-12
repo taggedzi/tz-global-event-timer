@@ -12,7 +12,10 @@ function detectTimeZone(intl = Intl) {
 }
 function supportedTimeZones(intl = Intl) {
   try { return [...new Set(['UTC', detectTimeZone(intl), ...intl.supportedValuesOf('timeZone')])].sort(); }
-  catch { return ['UTC', detectTimeZone(intl), 'America/New_York', 'Europe/London', 'Asia/Kolkata']; }
+  catch {
+    const fallbackZones = ['UTC', detectTimeZone(intl), 'America/New_York', 'Europe/London', 'Asia/Kolkata'];
+    return [...new Set(fallbackZones)].filter(zone => isTimeZone(zone, intl));
+  }
 }
 function resolveWallTime(wall, zone) {
   try {
