@@ -1,4 +1,58 @@
 const { test, expect } = require('@playwright/test');
+const { readFile } = require('node:fs/promises');
+
+test('event text exports use the displayed date and time and preserve the description', async ({ page }) => {
+  const description = 'Game night 🎮\nBring snacks & drinks.';
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+      async writeText(text) {
+        if (window.denyCopy) throw new Error('Denied');
+        window.lastCopied = text;
+      }
+    } });
+    window.print = () => { window.printCalled = true; };
+  });
+  await page.goto('/?' + new URLSearchParams({ date: '2028-01-01T20:00:00Z', desc: description }));
+  const zone = page.getByLabel('Display time zone');
+  await zone.fill('UTC');
+  await zone.press('Tab');
+  const expected = (await page.locator('#existingEventTime').textContent()) + '\n\n' + description;
+  expect(expected).toMatch(/20:00:00 .*\(UTC\)/);
+  await zone.fill('Invalid/Zone');
+  await zone.press('Tab');
+  await expect(page.locator('#viewerZoneError')).toContainText('last valid time');
+
+  const copy = page.getByRole('button', { name: 'Copy text' });
+  await copy.click();
+  await expect(page.locator('#eventCopyStatus')).toHaveText('Event text copied.');
+  expect(await page.evaluate(() => window.lastCopied)).toBe(expected);
+
+  await page.evaluate(() => { window.denyCopy = true; });
+  await copy.click();
+  const fallback = page.getByRole('textbox', { name: 'Event text', exact: true });
+  await expect(fallback).toBeFocused();
+  await expect(fallback).toHaveValue(expected);
+  expect(await fallback.evaluate(el => el.selectionEnd - el.selectionStart)).toBe(expected.length);
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'), page.getByRole('button', { name: 'Download text' }).click()
+  ]);
+  expect(download.suggestedFilename()).toBe('event-details.txt');
+  expect(await readFile(await download.path(), 'utf8')).toBe(expected);
+
+  await page.getByRole('button', { name: 'Print event' }).click();
+  expect(await page.evaluate(() => window.printCalled)).toBe(true);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('main')).toBeHidden();
+  const printText = page.locator('#eventPrintText');
+  await expect(printText).toBeVisible();
+  expect(await printText.textContent()).toBe(expected);
+  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await page.emulateMedia({ media: 'screen' });
+  await expect(printText).toBeHidden();
+  await expect(copy).toBeVisible();
+});
+
 test('detected viewer zones handle year rollover, offsets, and manual override', async ({ browser }) => {
   for (const [timezoneId, year, hour] of [['America/New_York','2026','18:30:00'],['Europe/London','2026','23:30:00'],['Asia/Kolkata','2027','05:00:00']]) {
     const context = await browser.newContext({ timezoneId, locale: 'en-GB' });

@@ -16,12 +16,14 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   const listeners = [];
   let disposeCountdown;
   let copyController;
+  let eventCopyController;
   function listen(target, type, handler) {
     target.addEventListener(type, handler);
     listeners.push(() => target.removeEventListener(type, handler));
   }
   const el = id => document.getElementById(id);
   el('existingEventTimer').style.removeProperty('display');
+  el('eventPrintText').textContent = '';
   el('linkError').textContent = '';
   el('eventZone').value = detectTimeZone(intl);
   el('timeZones').replaceChildren();
@@ -75,12 +77,13 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   invalidateCreation();
   updateDescriptionUsage();
 
+  function writeText(text) {
+    if (window.isSecureContext === false || !navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+    return navigator.clipboard.writeText(text);
+  }
   copyController = createCopyController({
-    getUrl: () => el('link').dataset.link,
-    writeText(text) {
-      if (window.isSecureContext === false || !navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
-      return navigator.clipboard.writeText(text);
-    },
+    getText: () => el('link').dataset.link,
+    writeText,
     onStatus(status) {
       el('copyStatus').textContent = status.message;
       el('copyUrl').disabled = status.kind === 'pending' || !el('link').dataset.link;
@@ -164,12 +167,49 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       el('downloadQr').focus();
     });
   });
-  listen(el('printQr'), 'click', () => window.print());
+  function clearEventPrintMode() {
+    document.body.classList.remove('print-event');
+  }
+  listen(el('printQr'), 'click', () => {
+    clearEventPrintMode();
+    window.print();
+  });
 
   const event = decodeEvent(location.search);
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
   if (event.kind === 'event') {
     const localZone = detectTimeZone(intl);
+    const hasDescription = Boolean(event.description.trim());
+    const printText = el('eventPrintText');
+    const getEventText = () => printText.textContent;
+    eventCopyController = createCopyController({
+      getText: getEventText,
+      writeText,
+      label: 'Event text',
+      onStatus(status) {
+        el('eventCopyStatus').textContent = status.message;
+        el('copyEventText').disabled = status.kind === 'pending';
+        el('eventCopyFallback').hidden = status.kind !== 'error';
+        if (status.kind === 'error') {
+          const field = el('eventCopyText');
+          field.value = getEventText();
+          field.focus();
+          field.select();
+        }
+      }
+    });
+    listen(el('copyEventText'), 'click', () => eventCopyController.copy());
+    listen(el('downloadEventText'), 'click', () => {
+      const link = document.createElement('a');
+      link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(getEventText().toWellFormed());
+      link.download = 'event-details.txt';
+      link.click();
+    });
+    listen(el('printEventText'), 'click', () => {
+      document.body.classList.add('print-event');
+      window.print();
+    });
+    listen(window, 'afterprint', clearEventPrintMode);
     el('viewerZone').value = localZone;
     el('existingEventHeader').textContent = '';
     el('existingEventTime').dataset.instant = event.date.toISOString();
@@ -183,13 +223,18 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       el('viewerZoneError').textContent = '';
       el('viewerZone').removeAttribute('aria-invalid');
       el('displayTimeLabel').textContent = zone === localZone ? 'Your local time' : 'Event time in selected zone';
-      el('existingEventTime').textContent = formatEventTime(event.date, zone, intl, navigator.language);
+      const formattedTime = formatEventTime(event.date, zone, intl, navigator.language);
+      el('existingEventTime').textContent = formattedTime;
+      const text = hasDescription ? formattedTime + '\n\n' + event.description : formattedTime;
+      if (text !== getEventText()) {
+        printText.textContent = text;
+        eventCopyController.invalidate();
+      }
     }
     renderViewer();
     listen(el('viewerZone'), 'change', renderViewer);
     if (event.zone && isTimeZone(event.zone, intl))
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
-    const hasDescription = Boolean(event.description.trim());
     el('eventDesc').textContent = event.description;
     el('eventDesc').hidden = !hasDescription;
     el('guestFallback').hidden = hasDescription;
@@ -210,6 +255,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     destroyed = true;
     disposeCountdown?.();
     copyController.destroy();
+    eventCopyController?.destroy();
+    clearEventPrintMode();
     for (const remove of listeners) remove();
     if (activeApps.get(window) === app) activeApps.delete(window);
   } };

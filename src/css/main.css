@@ -46,6 +46,11 @@ p { text-wrap: pretty; }
 }
 #existingEventTimer, #linkContainer { display: none; }
 #existingEventTimer { box-shadow: 0 16px 40px #23427412; }
+.event-overview { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; }
+.event-overview > :is(#guestFallback, #eventDesc) { grid-area: 1 / 1; }
+.event-actions { grid-area: 1 / 2; justify-self: end; display: flex; gap: 8px; }
+.event-actions button { display: grid; place-items: center; width: 40px; min-height: 40px; padding: 0; }
+.event-actions svg { width: 24px; height: 24px; }
 #guestFallback { font-size: 30px; line-height: 36px; }
 #eventDesc { white-space: pre-wrap; }
 .local-time { background: var(--highlight); border-radius: 12px; padding: 16px; }
@@ -93,6 +98,7 @@ a:hover { text-decoration-thickness: 2px; }
 .description-usage.over-limit progress { accent-color: var(--error); }
 .share-note { padding-inline: 16px; }
 .share-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+#eventPrintText { display: none; }
 #link { margin-right: auto; }
 #link a { display: inline-block; padding-block: 12px; }
 [role="alert"] { color: var(--error); }
@@ -120,6 +126,9 @@ a:hover { text-decoration-thickness: 2px; }
 @media (max-width: 600px) {
     body { padding: 24px 16px; }
     .card { padding: 24px; }
+    .event-overview { grid-template-columns: minmax(0, 1fr); }
+    .event-actions { grid-area: 1 / 1; }
+    .event-overview > :is(#guestFallback, #eventDesc) { grid-area: 2 / 1; }
     .schedule-fields { grid-template-columns: 1fr; }
     h1 { font-size: 36px; line-height: 40px; }
 }
@@ -133,8 +142,16 @@ a:hover { text-decoration-thickness: 2px; }
     button:active:not(:disabled) { transform: none; }
 }
 @media print {
-    body:has(#qrResult:not([hidden])) { padding: 0; background: white; }
-    body:has(#qrResult:not([hidden])) > :not(main),
+    body.print-event { padding: 0; background: white; color: black; }
+    body.print-event > :not(#eventPrintText) { display: none; }
+    body.print-event > #eventPrintText {
+        display: block;
+        white-space: pre-wrap;
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+    body:not(.print-event):has(#qrResult:not([hidden])) { padding: 0; background: white; }
+    body:not(.print-event):has(#qrResult:not([hidden])) > :not(main),
     main:has(#qrResult:not([hidden])) > :not(#linkContainer),
     #linkContainer:has(#qrResult:not([hidden])) > :not(#qrResult),
     #qrResult > :not(#qrImage) { display: none; }

@@ -21,8 +21,34 @@
         </header>
         <p id="linkError" role="alert"></p>
         <section id="existingEventTimer" class="card" aria-label="Scheduled event">
-            <h2 id="guestFallback">Scheduled event</h2>
-            <p id="eventDesc" hidden></p>
+            <div class="event-overview">
+                <div class="event-actions" role="group" aria-label="Event actions">
+                    <button id="downloadEventText" class="secondary" type="button" aria-label="Download text" title="Download text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12m-4-4 4 4 4-4M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>
+                        </svg>
+                    </button>
+                    <button id="copyEventText" class="secondary" type="button" aria-label="Copy text" title="Copy text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="8" y="8" width="12" height="13" rx="2"/>
+                            <path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/>
+                        </svg>
+                    </button>
+                    <button id="printEventText" class="secondary" type="button" aria-label="Print event" title="Print event">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 12h1"/>
+                            <path d="M7 15h10v6H7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <h2 id="guestFallback">Scheduled event</h2>
+                <p id="eventDesc" hidden></p>
+            </div>
+            <p id="eventCopyStatus" role="status" aria-atomic="true"></p>
+            <div id="eventCopyFallback" class="field" hidden>
+                <label for="eventCopyText">Event text</label>
+                <textarea id="eventCopyText" rows="4" readonly></textarea>
+            </div>
             <div class="local-time">
                 <p id="displayTimeLabel">Your local time</p>
                 <p id="existingEventTime"></p>
@@ -102,5 +128,6 @@
         </section>
         <p class="hint share-note">If the event changes, create and share a new link.</p>
     </main>
+    <p id="eventPrintText"></p>
 </body>
 </html>
