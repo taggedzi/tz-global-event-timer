@@ -2,12 +2,24 @@ const { decodeEvent, encodeEventUrl } = require('./event-link');
 const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
 
 const { formatEventTime } = require('./viewer');
+const { startCountdown } = require('./countdown');
+const activeApps = new WeakMap();
 
 function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.now(),
   setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
+  activeApps.get(window)?.destroy();
   const { document, navigator, location } = window;
+  const listeners = [];
+  let disposeCountdown;
+  function listen(target, type, handler) {
+    target.addEventListener(type, handler);
+    listeners.push(() => target.removeEventListener(type, handler));
+  }
   const el = id => document.getElementById(id);
+  el('existingEventTimer').style.removeProperty('display');
+  el('linkError').textContent = '';
   el('eventZone').value = detectTimeZone(intl);
+  el('timeZones').replaceChildren();
   for (const zone of supportedTimeZones(intl)) {
     const option = document.createElement('option'); option.value = zone; el('timeZones').appendChild(option);
   }
@@ -20,7 +32,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('occurrence').replaceChildren();
     el('formError').textContent = '';
   }
-  for (const id of ['newEvent', 'eventZone', 'newEventDesc']) el(id).addEventListener('input', invalidateCreation);
+  for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
+  invalidateCreation();
 
   function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement('textarea');
@@ -37,7 +50,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     navigator.clipboard.writeText(text).catch(error => console.error(error));
   }
 
-  el('create').addEventListener('click', () => {
+  listen(el('create'), 'click', () => {
     const result = resolveWallTime(el('newEvent').value, el('eventZone').value);
     let choice = result.choices[0];
     let message = '';
@@ -73,7 +86,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('link').dataset.link = url;
     el('linkContainer').style.display = 'block';
   });
-  el('copyUrl').addEventListener('click', () => copyTextToClipboard(el('link').dataset.link));
+  listen(el('copyUrl'), 'click', () => copyTextToClipboard(el('link').dataset.link));
 
   const event = decodeEvent(location.search);
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
@@ -93,25 +106,30 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       el('existingEventTime').textContent = formatEventTime(event.date, zone, intl, navigator.language);
     }
     renderViewer();
-    el('viewerZone').addEventListener('change', renderViewer);
+    listen(el('viewerZone'), 'change', renderViewer);
     if (event.zone && isTimeZone(event.zone, intl))
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
     el('eventDesc').textContent = event.description;
     el('countdown').style.display = 'block';
     el('existingEventTimer').style.display = 'block';
-    const target = event.date.getTime();
-    const timer = setInterval(() => {
-      const distance = target - getNow();
-      el('days').textContent = Math.floor(distance / 86400000);
-      el('hours').textContent = Math.floor((distance % 86400000) / 3600000);
-      el('minutes').textContent = Math.floor((distance % 3600000) / 60000);
-      el('seconds').textContent = Math.floor((distance % 60000) / 1000);
-      if (distance < 0) {
-        el('existingEventHeader').textContent = 'Event has already started.';
-        el('countdown').style.display = 'none';
-        clearInterval(timer);
+    disposeCountdown = startCountdown({ target: event.date.getTime(), now: getNow, setInterval, clearInterval, window,
+      render(state) {
+        for (const id of ['days', 'hours', 'minutes', 'seconds']) el(id).textContent = String(state[id]);
+        const header = state.started ? 'Event has already started.' : 'Currently Scheduled Event';
+        if (el('existingEventHeader').textContent !== header) el('existingEventHeader').textContent = header;
+        el('countdown').style.display = state.started ? 'none' : 'block';
       }
-    }, 200);
+    });
   }
+  let destroyed = false;
+  const app = { destroy() {
+    if (destroyed) return;
+    destroyed = true;
+    disposeCountdown?.();
+    for (const remove of listeners) remove();
+    if (activeApps.get(window) === app) activeApps.delete(window);
+  } };
+  activeApps.set(window, app);
+  return app;
 }
 module.exports = { initializeApp };
