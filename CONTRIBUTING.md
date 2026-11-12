@@ -19,21 +19,23 @@ assert internal implementation details or preserve known bugs as desired behavio
 
 - `npm test` / `npm run test:unit`: fast Node test-runner tests with jsdom.
 - `npm run prod`: one-shot production build.
-- `npm run test:browser`: Chromium smoke test against the existing production build.
-- `npm run check`: unit tests, production build, then browser test.
+- `npm run test:browser`: full Chromium suite against the existing production build.
+- `npm run check`: unit tests, production build, then the full Chromium suite.
 - `node scripts/serve.cjs`: serve dist at http://127.0.0.1:4173.
   Set SITE_DIR to serve another extracted build; no rebuild happens implicitly.
 
 CI runs the same check on PRs and main pushes. The browser server has a bounded
 startup and the CI job has a timeout. Failed browser runs retain traces,
 screenshots, and a report. Unit tests explicitly set UTC and inject a clock/timer
-scheduler; browser tests set their clock and timezone. Avoid sleeps and external
-services. Existing happy paths are covered first; issue-specific regression tests
-will cover invalid links, DST, viewer overrides, countdown boundaries, and copy errors.
+scheduler. Browser tests set the clock and timezone where needed. Avoid sleeps
+and external services. Regression tests cover invalid links, DST transitions,
+viewer overrides, countdown boundaries, clipboard failures, and event exports.
 
 For cross-browser link compatibility, install Firefox and WebKit with
 `npx playwright install firefox webkit`, then run `npm run test:compat` after
-a production build. CI stays on Chromium for the fast core flow and regressions.
+a production build. The link suite checks QR download and printing, public link
+formats, and protected links with correct passwords, wrong passwords, and
+tampered payloads. The preview server's loopback origin supports Web Crypto.
 
 ## Accessibility verification
 
@@ -54,4 +56,4 @@ contents and hashes, API failures, tag mismatches, draft recovery, and reruns.
 `npm run test:smoke` runs just the shared Chromium smoke flow; set SITE_DIR to
 an extracted ZIP to test the real package without publishing. Validate workflow
 syntax with actionlint when changing `.github/workflows/` files. A live manual
-release is the owner?s final verification; agents must not dispatch one as a test.
+release is a separate check performed by the owner.

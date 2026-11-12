@@ -1,9 +1,46 @@
 # Security review
 
+## Current status
+
+Status checked against `f4d641e09ea38922ada89d5526962f9033bb8a92` on
+November 12, 2026.
+
+- The preview server rejects decoded null bytes before filesystem access.
+  A Chromium regression test checks that it returns a client error and keeps
+  serving valid requests. [Server](scripts/serve.cjs) ·
+  [Security tests](tests/browser/security.spec.cjs)
+- The production HTML includes a Content Security Policy and a
+  `no-referrer` policy. The local preview server also sends response headers
+  for frame protection and MIME sniffing. Apply the documented headers on
+  the production static host and verify them there. [Header definitions](scripts/security-headers.cjs) ·
+  [Hosting instructions](README.md#building-and-hosting)
+- Link creation and decoding enforce a 4,096-byte UTF-8 description limit
+  and a 128-character organizer time zone limit. The event query is capped
+  at 13 KiB and decompression output at 1 MiB. Protected fragments are size
+  checked before password derivation. [Link parser and encoder](src/js/event-link.js)
+- Password protection encrypts the event query with AES-256-GCM using a
+  password-derived key. The encrypted payload lives in the URL fragment,
+  which stays out of ordinary HTTP requests. Unlocking uses the same event
+  parser and text-only rendering as public links. The browser suites cover
+  correct passwords, wrong passwords, and tampered payloads in Chromium,
+  Firefox, and WebKit. [Link format](README.md#event-link-format) ·
+  [Link tests](tests/browser/links.spec.cjs)
+
+Public links still expose their event data in the query string. Anyone with a
+protected link can try passwords offline. Anyone who knows the password can
+read or export the event details. Anyone can create an event link, so a
+protected link provides no proof of the organizer's identity.
+
+These updates reflect the current source and local tests. The original review
+below records the findings and test results for its source commit. Production
+hosting and physical QR scanners remain outside that review's scope.
+
+## Original review
+
 Reviewed November 11–12, 2026 (America/New_York).
 Source commit: `22d3a38f3c20811b1a267c76fb240f7bd81b4d35`.
 
-## Conclusion
+### Conclusion
 
 No exploitable cross-site scripting (XSS: attacker-controlled JavaScript running
 in a visitor's page) or server code-execution path was found in the reviewed
@@ -20,7 +57,7 @@ possible payload or future change. No deployed URL or production server
 configuration was supplied; production TLS, headers, permissions, host patches,
 and request limits were not verified.
 
-## Confirmed finding: malformed paths crash the preview server
+### Confirmed finding at the time: malformed paths crash the preview server
 
 **Severity: low in the documented loopback-only configuration; greater
 availability impact if exposed through a proxy or changed to listen publicly.**
@@ -47,9 +84,9 @@ synchronous filesystem argument errors without letting them escape the request
 handler. Add a regression test that sends the bad request, expects a client
 error, and then confirms the same process serves a normal request.
 
-## Hardening opportunities
+### Hardening opportunities at the time
 
-### Browser security policy is not supplied by the project
+#### Browser security policy
 
 Locations: `src/index.html:3-8`, `scripts/serve.cjs:20`,
 `webpack.common.js:16`.
@@ -78,7 +115,7 @@ also keeps this page separate from authenticated applications and user uploads.
 References: [MDN CSP guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP),
 [MDN Referrer-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy).
 
-### Size limits differ between link formats
+#### Size limits across link formats
 
 Locations: `src/js/event-link.js:5`, `src/js/event-link.js:61-68`,
 `src/js/event-link.js:80-83`, `src/index.html:63`.
@@ -99,7 +136,7 @@ and both decoders, bound the total query before parsing, and bound timezone
 metadata. An HTML `maxlength` alone would not protect recipients because attackers
 can construct links directly. Keep the existing decompression limit and chunking.
 
-## Why the reviewed payload paths resist execution
+### Why the reviewed payload paths resist execution
 
 - `src/js/app.js:161` assigns descriptions to `textContent`. Markup, event-handler
   attributes, script tags, and `javascript:` text remain text.
@@ -124,7 +161,7 @@ can construct links directly. Keep the existing decompression limit and chunking
   workflow, not a route reachable through an event link. Workflow actions are
   pinned to commits.
 
-## Validation performed
+### Validation performed
 
 - 95 existing unit tests passed.
 - Production webpack build passed.
@@ -148,7 +185,7 @@ can construct links directly. Keep the existing decompression limit and chunking
 QR generation and the URL handling were tested. Independent phone cameras,
 scanner applications, and their browser engines were not audited.
 
-## Remaining trust boundaries
+### Trust boundaries at the time
 
 Compression is not encryption or authentication. Anyone with a link can read or
 change the event, and anyone can create an event that appears on this site.
