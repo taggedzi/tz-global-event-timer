@@ -1,0 +1,32 @@
+# Contributing
+
+Use Node.js 24 LTS (see .nvmrc). Install with `npm ci`, then
+`npx playwright install --with-deps chromium`. On Windows, omit --with-deps.
+
+## Small TDD loop
+
+1. Pick one issue and start a branch from updated main.
+2. Write an observable behavior test and run it. Confirm it fails for the intended reason.
+3. Make the smallest implementation change, then refactor with tests green.
+4. Run `npm run check`. Open a focused PR with `Closes #N`, a short explanation, and check results.
+
+Separate test-only commits are optional. Configuration changes can start with a
+failing install/build check. No coverage percentage is required. Add meaningful
+success, error, boundary, and relevant rare-case tests for each feature; do not
+assert internal implementation details or preserve known bugs as desired behavior.
+
+## Commands
+
+- `npm test` / `npm run test:unit`: fast Node test-runner tests with jsdom.
+- `npm run prod`: one-shot production build.
+- `npm run test:browser`: Chromium smoke test against the existing production build.
+- `npm run check`: unit tests, production build, then browser test.
+- `node scripts/serve.cjs`: serve dist at http://127.0.0.1:4173.
+  Set SITE_DIR to serve another extracted build; no rebuild happens implicitly.
+
+CI runs the same check on PRs and main pushes. The browser server has a bounded
+startup and the CI job has a timeout. Failed browser runs retain traces,
+screenshots, and a report. Unit tests explicitly set UTC and inject a clock/timer
+scheduler; browser tests set their clock and timezone. Avoid sleeps and external
+services. Existing happy paths are covered first; issue-specific regression tests
+will cover invalid links, DST, viewer overrides, countdown boundaries, and copy errors.

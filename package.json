@@ -5,7 +5,11 @@
   "main": "index.html",
   "scripts": {
     "build": "webpack --config webpack.dev.js",
-    "prod": "webpack --config webpack.prod.js"
+    "prod": "webpack --config webpack.prod.js",
+    "test": "npm run test:unit",
+    "test:unit": "node --test tests/unit/*.test.cjs",
+    "test:browser": "playwright test",
+    "check": "npm run test:unit && npm run prod && npm run test:browser"
   },
   "author": "Matthew Craig",
   "license": "MIT",
@@ -13,11 +17,16 @@
     "flatpickr": "^4.6.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",
+    "jsdom": "^31.0.0",
     "nodemon": "^2.0.15",
     "style-loader": "^3.3.1",
     "webpack": "^5.71.0",
     "webpack-cli": "^4.9.2"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
