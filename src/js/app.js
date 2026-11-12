@@ -31,6 +31,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     el('occurrenceContainer').hidden = true;
     el('occurrence').replaceChildren();
     el('formError').textContent = '';
+    for (const id of ['newEvent', 'eventZone', 'occurrence']) el(id).removeAttribute('aria-invalid');
   }
   for (const id of ['newEvent', 'eventZone', 'newEventDesc']) listen(el(id), 'input', invalidateCreation);
   invalidateCreation();
@@ -50,7 +51,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     navigator.clipboard.writeText(text).catch(error => console.error(error));
   }
 
-  listen(el('create'), 'click', () => {
+  listen(el('newEventContainer'), 'submit', event => {
+    event.preventDefault();
     const result = resolveWallTime(el('newEvent').value, el('eventZone').value);
     let choice = result.choices[0];
     let message = '';
@@ -72,8 +74,9 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     }
     el('formError').textContent = message;
     if (message) {
-      el('newEvent').setAttribute('aria-invalid', 'true');
-      (result.kind === 'ambiguous' ? el('occurrence') : el('newEvent')).focus();
+      const invalidField = result.kind === 'ambiguous' ? el('occurrence') : !isTimeZone(el('eventZone').value) ? el('eventZone') : el('newEvent');
+      invalidField.setAttribute('aria-invalid', 'true');
+      invalidField.focus();
       return;
     }
     el('newEvent').removeAttribute('aria-invalid');
@@ -84,14 +87,14 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     anchor.textContent = url;
     el('link').replaceChildren(anchor);
     el('link').dataset.link = url;
-    el('linkContainer').style.display = 'block';
+    el('linkContainer').style.display = 'grid';
   });
   listen(el('copyUrl'), 'click', () => copyTextToClipboard(el('link').dataset.link));
 
   const event = decodeEvent(location.search);
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
   if (event.kind === 'event') {
-    el('existingEventHeader').textContent = 'Currently Scheduled Event';
+    el('existingEventHeader').textContent = 'Currently scheduled event';
     el('viewerZone').value = detectTimeZone(intl);
     el('existingEventTime').dataset.instant = event.date.toISOString();
     function renderViewer() {
@@ -111,11 +114,11 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
     el('eventDesc').textContent = event.description;
     el('countdown').style.display = 'block';
-    el('existingEventTimer').style.display = 'block';
+    el('existingEventTimer').style.display = 'grid';
     disposeCountdown = startCountdown({ target: event.date.getTime(), now: getNow, setInterval, clearInterval, window,
       render(state) {
         for (const id of ['days', 'hours', 'minutes', 'seconds']) el(id).textContent = String(state[id]);
-        const header = state.started ? 'Event has already started.' : 'Currently Scheduled Event';
+        const header = state.started ? 'Event has already started.' : 'Currently scheduled event';
         if (el('existingEventHeader').textContent !== header) el('existingEventHeader').textContent = header;
         el('countdown').style.display = state.started ? 'none' : 'block';
       }
