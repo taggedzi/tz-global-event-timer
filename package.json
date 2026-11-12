@@ -13,7 +13,8 @@
     "build:dev": "webpack --config webpack.dev.js",
     "dev": "webpack --config webpack.dev.js --watch",
     "serve": "node scripts/serve.cjs",
-    "test:compat": "playwright test --project=firefox --project=webkit"
+    "test:compat": "playwright test --project=firefox --project=webkit",
+    "test:smoke": "playwright test smoke.spec.cjs --project=chromium"
   },
   "author": "Matthew Craig",
   "license": "MIT",
@@ -25,6 +26,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "css-loader": "^7.1.5",
+    "fflate": "^0.8.3",
     "html-webpack-plugin": "^5.6.8",
     "jsdom": "^31.0.0",
     "style-loader": "^4.0.0",

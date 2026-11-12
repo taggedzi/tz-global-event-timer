@@ -52,3 +52,30 @@ Copy link reports success only after the browser confirms the copy. If copying
 is unavailable or denied, the link field is selected for manual copying.
 Changing event details clears the generated link, so create a new link before
 copying again.
+
+## Manual GitHub releases
+
+After the Release workflow is merged into main, open GitHub **Actions ? Release ?
+Run workflow**. Select **main** (or another branch you intend to release), then
+click **Run workflow**. No local release command or personal access token is needed.
+
+The workflow tests the exact selected commit, builds a ZIP, extracts it, and runs
+the Chromium smoke flow against the extracted site before publishing. The release
+contains `tz-global-event-timer-vYYYY.MM.DD.RUN.zip`, its SHA-256 checksum, change
+notes, source commit, UTC build time, and a link to the workflow run.
+
+The date comes from the workflow run creation time in UTC. The run number makes
+same-day releases unique; rerunning the same run keeps the same version even
+after midnight. A successful rerun keeps the existing published release intact.
+A failed upload leaves a draft that the same run can safely retry. Releases are
+serialized; normal CI, pushes, and tags never publish automatically.
+
+Download the attached deployable ZIP, rather than GitHub?s source-code archives.
+Verify with `sha256sum -c <filename>.zip.sha256`, or compare PowerShell?s
+`Get-FileHash <filename>.zip -Algorithm SHA256` with the checksum file. Extract
+the whole ZIP into a static HTTP(S) web root. Keep all assets and license notices
+together. HTTPS enables clipboard support; no application server is required.
+
+The release script uses GitHub?s built-in token. If repository tag/release rules
+reject it, the workflow fails visibly and keeps a draft rather than publishing an
+incomplete release. No production release is created by the test suite.

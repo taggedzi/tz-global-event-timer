@@ -131,3 +131,6 @@ dist
 # Browser test artifacts
 playwright-report/
 test-results/
+
+# Local release packaging checks
+release-output/
