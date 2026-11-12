@@ -4,27 +4,30 @@
   "description": "A web based event timer to show time in visitors time zone.",
   "main": "index.html",
   "scripts": {
-    "build": "webpack --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
     "prod": "webpack --config webpack.prod.js",
     "test": "npm run test:unit",
     "test:unit": "node --test tests/unit/*.test.cjs",
     "test:browser": "playwright test",
-    "check": "npm run test:unit && npm run prod && npm run test:browser"
+    "check": "npm run test:unit && npm run prod && npm run test:browser",
+    "build:dev": "webpack --config webpack.dev.js",
+    "dev": "webpack --config webpack.dev.js --watch",
+    "serve": "node scripts/serve.cjs"
   },
   "author": "Matthew Craig",
   "license": "MIT",
   "dependencies": {
-    "flatpickr": "^4.6.11"
+    "flatpickr": "^4.6.13"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
-    "css-loader": "^6.7.1",
-    "html-webpack-plugin": "^5.5.0",
+    "css-loader": "^7.1.5",
+    "html-webpack-plugin": "^5.6.8",
     "jsdom": "^31.0.0",
-    "nodemon": "^2.0.15",
-    "style-loader": "^3.3.1",
-    "webpack": "^5.71.0",
-    "webpack-cli": "^4.9.2"
+    "style-loader": "^4.0.0",
+    "webpack": "^5.112.2",
+    "webpack-cli": "^7.3.1",
+    "webpack-merge": "^6.0.1"
   },
   "engines": {
     "node": ">=24"
