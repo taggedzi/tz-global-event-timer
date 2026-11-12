@@ -1,12 +1,14 @@
 const { decodeEvent, encodeEventUrl } = require('./event-link');
-const { resolveWallTime, detectTimeZone, supportedTimeZones } = require('./timezone');
+const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = require('./timezone');
 
-function initializeApp({ window, now: getNow = () => Date.now(),
+const { formatEventTime } = require('./viewer');
+
+function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.now(),
   setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
   const { document, navigator, location } = window;
   const el = id => document.getElementById(id);
-  el('eventZone').value = detectTimeZone(window.Intl);
-  for (const zone of supportedTimeZones(window.Intl)) {
+  el('eventZone').value = detectTimeZone(intl);
+  for (const zone of supportedTimeZones(intl)) {
     const option = document.createElement('option'); option.value = zone; el('timeZones').appendChild(option);
   }
   function invalidateCreation() {
@@ -77,7 +79,23 @@ function initializeApp({ window, now: getNow = () => Date.now(),
   if (event.kind === 'invalid') el('linkError').textContent = event.message;
   if (event.kind === 'event') {
     el('existingEventHeader').textContent = 'Currently Scheduled Event';
-    el('existingEventTime').textContent = event.date.toString();
+    el('viewerZone').value = detectTimeZone(intl);
+    el('existingEventTime').dataset.instant = event.date.toISOString();
+    function renderViewer() {
+      const zone = el('viewerZone').value;
+      if (!isTimeZone(zone, intl)) {
+        el('viewerZoneError').textContent = 'Choose a valid named timezone. The last valid time is still shown.';
+        el('viewerZone').setAttribute('aria-invalid', 'true');
+        return;
+      }
+      el('viewerZoneError').textContent = '';
+      el('viewerZone').removeAttribute('aria-invalid');
+      el('existingEventTime').textContent = formatEventTime(event.date, zone, intl, navigator.language);
+    }
+    renderViewer();
+    el('viewerZone').addEventListener('change', renderViewer);
+    if (event.zone && isTimeZone(event.zone, intl))
+      el('originEventTime').textContent = 'Organizer time: ' + formatEventTime(event.date, event.zone, intl, navigator.language);
     el('eventDesc').textContent = event.description;
     el('countdown').style.display = 'block';
     el('existingEventTimer').style.display = 'block';
