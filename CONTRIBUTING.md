@@ -30,3 +30,7 @@ screenshots, and a report. Unit tests explicitly set UTC and inject a clock/time
 scheduler; browser tests set their clock and timezone. Avoid sleeps and external
 services. Existing happy paths are covered first; issue-specific regression tests
 will cover invalid links, DST, viewer overrides, countdown boundaries, and copy errors.
+
+For cross-browser link compatibility, install Firefox and WebKit with
+`npx playwright install firefox webkit`, then run `npm run test:compat` after
+a production build. CI stays on Chromium for the fast core flow and regressions.

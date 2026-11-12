@@ -25,3 +25,11 @@ Use `npm run serve` in another terminal to serve the built files locally.
 Deploy the contents of `dist/` to a static HTTP(S) host; Node is build tooling,
 not a required production server. Node 24 LTS is the documented development/CI
 target; direct build dependencies are declared in package.json and locked.
+
+## Event link format
+
+New links encode a UTC ISO 8601 instant in `date` (with seconds and optional
+three-digit milliseconds) and optional text in `desc`. Valid legacy UTC-string
+links remain readable. Local-time strings, impossible dates, and repeated date
+parameters are rejected with an explanation. Tracking-only links open creation.
+Links are snapshots: changing an event requires sharing a newly generated link.

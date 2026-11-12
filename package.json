@@ -8,11 +8,12 @@
     "prod": "webpack --config webpack.prod.js",
     "test": "npm run test:unit",
     "test:unit": "node --test tests/unit/*.test.cjs",
-    "test:browser": "playwright test",
+    "test:browser": "playwright test --project=chromium",
     "check": "npm run test:unit && npm run prod && npm run test:browser",
     "build:dev": "webpack --config webpack.dev.js",
     "dev": "webpack --config webpack.dev.js --watch",
-    "serve": "node scripts/serve.cjs"
+    "serve": "node scripts/serve.cjs",
+    "test:compat": "playwright test --project=firefox --project=webkit"
   },
   "author": "Matthew Craig",
   "license": "MIT",
