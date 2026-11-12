@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { readFile } = require('node:fs/promises');
 const { selectDateTime } = require('./date-time-picker.cjs');
 
 test('event QR code can be downloaded and printed, and is cleared when the link changes', async ({ page }) => {
@@ -97,8 +98,10 @@ test('password protected links hide the event until unlocked and reject tamperin
   await openLink.click();
   const unlock = page.getByLabel('Event password', { exact: true });
   const timer = page.locator('#existingEventTimer');
+  const calendarButton = page.getByRole('button', { name: 'Download calendar file (.ics)', exact: true });
   await expect(unlock).toBeVisible();
   await expect(timer).toBeHidden();
+  await expect(calendarButton).toBeHidden();
   await expect(page.locator('#eventDesc')).toBeEmpty();
   await expect(page.locator('#newEventDesc')).toHaveValue('');
   await unlock.fill('wrong password');
@@ -113,6 +116,13 @@ test('password protected links hide the event until unlocked and reject tamperin
   await expect(page.locator('#eventDesc img')).toHaveCount(0);
   await expect(page.locator('#existingEventTime')).toHaveAttribute('data-instant', '2030-07-01T19:00:00.000Z');
   await expect(page.locator('#originEventTime')).toContainText('Europe/London');
+  const [download] = await Promise.all([page.waitForEvent('download'), calendarButton.click()]);
+  expect(download.suggestedFilename()).toBe('event.ics');
+  const calendar = await readFile(await download.path(), 'utf8');
+  expect(calendar).toContain('\r\nDTSTART:20300701T190000Z\r\n');
+  expect(calendar).toContain('\r\nDESCRIPTION:' + description + '\r\n');
+  expect(calendar).not.toContain(password);
+  expect(calendar).not.toContain(url.hash);
 
   // Change one character within the ciphertext while keeping the URL well formed.
   const offset = 50;

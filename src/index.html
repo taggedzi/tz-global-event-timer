@@ -36,6 +36,12 @@
                         <path d="M12 3v12m-4-4 4 4 4-4M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>
                     </svg>
                 </button>
+                <button id="downloadEventCalendar" class="secondary" type="button" aria-label="Download calendar file (.ics)" title="Download calendar file (.ics)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M7 3v4m10-4v4M3 10h18m-9 2v6m-2.5-2.5 2.5 2.5 2.5-2.5"/>
+                    </svg>
+                </button>
                 <button id="copyEventText" class="secondary" type="button" aria-label="Copy text" title="Copy text">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <rect x="8" y="8" width="12" height="13" rx="2"/>
@@ -49,6 +55,7 @@
                     </svg>
                 </button>
             </div>
+            <p id="eventCalendarStatus" role="status" aria-atomic="true"></p>
             <div class="local-time">
                 <p id="displayTimeLabel">The event in your local time</p>
                 <p id="existingEventTime"></p>

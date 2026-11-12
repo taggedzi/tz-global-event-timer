@@ -6,6 +6,7 @@ const { resolveWallTime, detectTimeZone, supportedTimeZones, isTimeZone } = requ
 const { initializeDateTimePicker } = require('./date-time-picker');
 
 const { formatEventTime } = require('./viewer');
+const { serializeCalendarEvent } = require('./calendar-export');
 const { startCountdown } = require('./countdown');
 const { createCopyController } = require('./clipboard');
 const QRCode = require('qrcode');
@@ -51,6 +52,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   el('eventCopyFallback').hidden = true;
   el('copyEventText').disabled = false;
   el('eventCopyStatus').textContent = '';
+  el('eventCalendarStatus').textContent = '';
   el('linkError').textContent = '';
   el('eventZone').value = detectTimeZone(intl);
   el('timeZones').replaceChildren();
@@ -267,6 +269,25 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       const link = document.createElement('a');
       link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(getEventText().toWellFormed());
       link.download = 'event-details.txt';
+      link.click();
+    });
+    let calendarUid;
+    listen(el('downloadEventCalendar'), 'click', () => {
+      const status = el('eventCalendarStatus');
+      calendarUid ??= Array.from(window.crypto.getRandomValues(new Uint8Array(16)),
+        byte => byte.toString(16).padStart(2, '0')).join('');
+      let calendar;
+      try {
+        calendar = serializeCalendarEvent(event, { exportedAt: new Date(getNow()), uid: calendarUid });
+      } catch (error) {
+        if (!(error instanceof RangeError)) throw error;
+        status.textContent = 'Could not download the calendar file. ' + error.message;
+        return;
+      }
+      status.textContent = '';
+      const link = document.createElement('a');
+      link.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(calendar);
+      link.download = 'event.ics';
       link.click();
     });
     listen(el('printEventText'), 'click', () => {

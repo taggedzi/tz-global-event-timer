@@ -137,6 +137,10 @@ Use **Download text**, **Copy text**, or **Print event** to export the displayed
 time and description as plain text. If copying is unavailable, the app selects
 the text for manual copying.
 
+Use **Download calendar file (.ics)** to save the event's start time and
+description for a calendar app. The calendar title is **Event**. A file
+downloaded from an unlocked event is plain text.
+
 **Copy link** reports success only after the browser confirms the copy. If
 copying is unavailable or denied, the link field is selected for manual copying.
 Changing event details or link options clears the generated link. Create a new

@@ -70,6 +70,44 @@ test('event text exports use the displayed date and time and preserve the descri
   await expect(copy).toBeVisible();
 });
 
+test('calendar export uses the event instant even after the event starts or the display zone changes', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2028-01-02T00:00:00Z'));
+  const exportButton = page.getByRole('button', { name: 'Download calendar file (.ics)', exact: true });
+  await page.goto('/');
+  await expect(exportButton).toBeHidden();
+  await page.goto('/?date=invalid');
+  await expect(exportButton).toBeHidden();
+
+  const description = 'Game night 🎮\nBring snacks & drinks.';
+  await page.goto('/?' + new URLSearchParams({ date: '2028-01-01T20:00:00Z', desc: description }));
+  await expect(page.getByText('Event has already started.')).toBeVisible();
+  const zone = page.getByRole('combobox', { name: 'Display time zone' });
+  await zone.selectOption('UTC');
+
+  async function downloadCalendar() {
+    const [download] = await Promise.all([page.waitForEvent('download'), exportButton.press('Enter')]);
+    expect(download.suggestedFilename()).toBe('event.ics');
+    return readFile(await download.path(), 'utf8');
+  }
+
+  const calendar = await downloadCalendar();
+  expect(calendar).toContain('\r\nDTSTAMP:20280102T000000Z\r\n');
+  expect(calendar).toContain('\r\nDTSTART:20280101T200000Z\r\n');
+  expect(calendar).toContain('\r\nDESCRIPTION:Game night 🎮\\nBring snacks & drinks.\r\n');
+  expect(calendar).toMatch(/\r\nUID:[0-9a-f]{32}\r\n/);
+
+  await zone.selectOption('Asia/Tokyo');
+  await expect(page.locator('#existingEventTime')).toContainText('05:00:00');
+  expect(await downloadCalendar()).toBe(calendar);
+});
+
+test('a year beyond the calendar format shows an export error and keeps the viewer usable', async ({ page }) => {
+  await page.goto('/?' + new URLSearchParams({ date: '+010000-01-01T00:00:00Z' }));
+  await page.getByRole('button', { name: 'Download calendar file (.ics)', exact: true }).click();
+  await expect(page.getByText('Could not download the calendar file. Calendar files require a four-digit year.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download text' })).toBeEnabled();
+});
+
 test('detected viewer zones handle year rollover, offsets, and manual override', async ({ browser }) => {
   for (const [timezoneId, year, hour] of [['America/New_York','2026','18:30:00'],['Europe/London','2026','23:30:00'],['Asia/Kolkata','2027','05:00:00']]) {
     const context = await browser.newContext({ timezoneId, locale: 'en-GB' });
