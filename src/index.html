@@ -23,15 +23,18 @@
         <template id="unlockEventTemplate">
             <form id="unlockEventForm" class="card" aria-labelledby="unlockHeading">
                 <h2 id="unlockHeading">Password protected event</h2>
+                <p id="lockedSourceNotice" class="notice">The timer displays event details supplied by whoever created this link. The timer cannot verify who created it or whether the details are accurate. Confirm unexpected details with the organizer through a contact method you already trust.</p>
+                <p id="officialAddressNotice">Before entering a password, check this site’s address against the <a href="https://github.com/taggedzi/tz-global-event-timer#official-addresses">official addresses in the project repository</a>.</p>
                 <div class="field">
                     <label for="unlockPassword">Event password</label>
-                    <input id="unlockPassword" type="password" autocomplete="off" aria-describedby="unlockError" required>
+                    <input id="unlockPassword" type="password" autocomplete="off" aria-describedby="lockedSourceNotice officialAddressNotice unlockError" required>
                     <p id="unlockError" role="alert"></p>
                 </div>
                 <button id="unlockEventButton" type="submit">Unlock event</button>
             </form>
         </template>
-        <section id="existingEventTimer" class="card" aria-label="Scheduled event" tabindex="-1">
+        <section id="existingEventTimer" class="card" aria-label="Scheduled event" aria-describedby="eventSourceNotice" tabindex="-1">
+            <p id="eventSourceNotice" class="notice">The timer displays event details supplied by whoever created this link. The timer cannot verify who created it or whether the details are accurate. Confirm unexpected details with the organizer through a contact method you already trust.</p>
             <div class="event-actions" role="group" aria-label="Event actions">
                 <button id="downloadEventText" class="secondary" type="button" aria-label="Download text" title="Download text">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -69,6 +72,7 @@
                     <li><span id="minutes"></span>Minutes</li>
                     <li><span id="seconds"></span>Seconds</li>
                 </ul>
+                <p id="countdownNotice" class="notice">The countdown uses your device clock. For important events, confirm the time with the organizer. Schedule changes require a new link.</p>
             </div>
             <h2 id="guestFallback">Scheduled event</h2>
             <p id="eventDesc" hidden></p>
@@ -106,7 +110,7 @@
             </div>
             <div class="field">
                 <label for="newEventDesc">Description <span class="hint">(optional)</span></label>
-                <textarea id="newEventDesc" name="newEventDesc" rows="3" placeholder="Team demo day" aria-describedby="descriptionHelp descriptionRemaining formError"></textarea>
+                <textarea id="newEventDesc" name="newEventDesc" rows="3" placeholder="Team demo day" aria-describedby="descriptionHelp descriptionRemaining createNotice formError"></textarea>
                 <div class="description-footer">
                     <p id="descriptionHelp" class="hint">Use plain text. HTML formatting and scripts are unsupported.</p>
                     <div class="description-usage hint">
@@ -114,6 +118,7 @@
                         <span id="descriptionRemaining"></span>
                     </div>
                 </div>
+                <p id="createNotice" class="notice">Leave secrets and sensitive information out of event links. Anyone with a public link can read the event details. Public links may appear in hosting logs.</p>
             </div>
             <label class="checkbox-label">
                 <input id="compressLink" name="compressLink" type="checkbox" checked>
@@ -123,7 +128,7 @@
                 <div id="linkPasswordField" class="field">
                     <label for="linkPassword">Protect with a password <span class="hint">(optional)</span></label>
                     <input id="linkPassword" type="password" autocomplete="new-password" aria-describedby="passwordHelp">
-                    <p id="passwordHelp" class="hint">Leave blank to create a public link. Share the password separately. Anyone with the link can try password guesses offline. Password protection cannot guarantee privacy.</p>
+                    <p id="passwordHelp" class="hint">Leave blank to create a public link. Leave sensitive information out of protected links too. Anyone who gets a protected link can try password guesses offline. Use a strong, unique password and send it through a separate channel. Anyone who gets both the link and password can open it. Recipients can copy or forward the details after opening it.</p>
                 </div>
             </template>
             <button id="create" type="submit">Create event link</button>
@@ -132,9 +137,10 @@
         </form>
         <section id="linkContainer" class="card" aria-labelledby="linkHeading">
             <h2 id="linkHeading">Your event link</h2>
+            <p id="shareNotice" class="notice">Leave secrets and sensitive information out of event links. Anyone with a public link can read the event details. Public links may appear in hosting logs.</p>
             <div class="field">
                 <label for="shareUrl">Shareable link</label>
-                <input id="shareUrl" type="text" readonly>
+                <input id="shareUrl" type="text" aria-describedby="shareNotice" readonly>
             </div>
             <div class="share-actions">
                 <div id="link"></div>
@@ -151,6 +157,19 @@
         </section>
         <p class="hint share-note">If the event changes, create and share a new link.</p>
     </main>
+    <footer id="official-addresses" class="card" aria-labelledby="officialAddressesHeading">
+        <h2 id="officialAddressesHeading">Official addresses</h2>
+        <ul class="official-links">
+            <li><a href="https://taggedzi.github.io/tz-global-event-timer/">taggedzi.github.io/tz-global-event-timer</a></li>
+            <li><a href="https://timer.taggedz.me/">timer.taggedz.me</a></li>
+        </ul>
+        <p>The official Global Event Timer is available at the addresses listed here. Independent copies may handle event details and passwords differently. A modified site can read what you type before encrypting it or can collect details after unlock. If a site asks for a password, check its address before entering anything. Leave sensitive information out of event links.</p>
+        <p>Independent copies can look identical and can capture or publish event data. The MIT license allows modification and redistribution with the required notices. It provides the software as is, with warranty and liability disclaimers. See the <a href="https://github.com/taggedzi/tz-global-event-timer#official-addresses">project README</a> for details.</p>
+        <h2>Report abuse or a security bug</h2>
+        <p>For abuse involving an official timer site, open a <a href="https://github.com/taggedzi/tz-global-event-timer/issues/new/choose">GitHub issue</a> and choose <strong>Question or other</strong>. For suspected impersonation on GitHub, use <a href="https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam">GitHub’s abuse reporting process</a>. For impersonation elsewhere, report it to the relevant host.</p>
+        <p>Include the suspicious domain or address. Remove the query string (starting with <code>?</code>) and fragment (starting with <code>#</code>). Include redacted screenshots if helpful. Keep full event links, event details, and passwords out of public reports.</p>
+        <p>Use <a href="https://github.com/taggedzi/tz-global-event-timer/security/advisories/new">private vulnerability reporting</a> for security bugs.</p>
+    </footer>
     <dialog id="eventDateTimePicker" aria-labelledby="pickerHeading" aria-describedby="pickerZone">
         <form id="pickerForm" novalidate>
             <header>

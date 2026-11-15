@@ -57,3 +57,20 @@ test('labels, keyboard submission, and error focus are usable', async ({ page })
   await page.keyboard.press('Enter');
   await expect(page.locator('#link a')).toBeVisible();
 });
+
+test('the official addresses and reporting paths are visible from the timer', async ({ page }) => {
+  await page.goto('/#official-addresses');
+  const official = page.locator('#official-addresses');
+  await expect(official.getByRole('heading', { name: 'Official addresses' })).toBeVisible();
+  const addresses = await official.getByRole('list').getByRole('link').evaluateAll(links => links.map(link => link.href));
+  expect(addresses).toEqual(['https://taggedzi.github.io/tz-global-event-timer/', 'https://timer.taggedz.me/']);
+  await expect(official.getByRole('link', { name: 'project README' })).toHaveAttribute(
+    'href', 'https://github.com/taggedzi/tz-global-event-timer#official-addresses'
+  );
+  await expect(official.getByRole('link', { name: 'GitHub issue', exact: true })).toHaveAttribute(
+    'href', 'https://github.com/taggedzi/tz-global-event-timer/issues/new/choose'
+  );
+  await expect(official.getByRole('link', { name: 'private vulnerability reporting' })).toHaveAttribute(
+    'href', 'https://github.com/taggedzi/tz-global-event-timer/security/advisories/new'
+  );
+});

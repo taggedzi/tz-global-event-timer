@@ -114,7 +114,11 @@ If the plan changes, make a new link. Old links keep the old time.
 
 A normal invite fits in a QR code. A very long note might not. Shorten the note, or copy the link instead.
 
+Leave secrets and sensitive information out of event links. Anyone with a public link can read the event details, and the link may appear in hosting logs.
+
 Password protection is disabled by default because the legal implications of hosting it are unclear. Anyone who enables and hosts it takes responsibility for doing so.
+
+When enabled, password protection reduces casual access. Anyone with the link can try guesses offline. Choose a long, randomly generated password or passphrase that you use only for that event. Send it through a separate channel. An intercepted or forwarded message can expose both the password and the link or QR code if you send them together. Knowing the password gives no assurance about who sent the link. After unlock, copied or downloaded text, calendar files, and printouts can expose the event details.
 
 The full steps and limits are in [Using the timer](docs/using-the-timer.md).
 
@@ -128,7 +132,26 @@ The full steps and limits are in [Using the timer](docs/using-the-timer.md).
 - Download a calendar file and add the event to a calendar app.
 - Come back later. The countdown uses the clock on their device.
 
-The page uses the time zone already set on the computer.
+The page uses the time zone already set on the computer. An inaccurate device clock can make the countdown wrong. Confirm unexpected details and important times with the organizer through a contact method you already trust.
+
+## Official addresses
+
+- [taggedzi.github.io/tz-global-event-timer](https://taggedzi.github.io/tz-global-event-timer/)
+- [timer.taggedz.me](https://timer.taggedz.me/)
+
+The official Global Event Timer is available at the addresses listed here. Independent copies may handle event details and passwords differently. A modified site can read what you type before encrypting it or can collect details after unlock. If a site asks for a password, check its address before entering anything. Leave sensitive information out of event links.
+
+Independent copies can look identical and can capture or publish event data. The [MIT license](LICENSE) allows people to modify and redistribute the software with the required notices. It provides the software as is and includes warranty and liability disclaimers. A lawful fork can operate independently. Report suspected impersonation under the relevant platform's policies.
+
+The [timer on Matthew Craig’s personal domain](https://timer.taggedz.me/#official-addresses) lists the same addresses and links back here.
+
+### Report abuse or a security bug
+
+For abuse involving either official timer site, open a [GitHub issue](https://github.com/taggedzi/tz-global-event-timer/issues/new/choose) and choose **Question or other**. For suspected impersonation, use [GitHub’s abuse reporting process](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam) for GitHub-hosted content or report it to the relevant host.
+
+Include the suspicious domain or address. Remove the query string (starting with `?`) and fragment (starting with `#`). Include redacted screenshots if helpful. Keep full event links, event details, and passwords out of public reports.
+
+Use [private vulnerability reporting](https://github.com/taggedzi/tz-global-event-timer/security/advisories/new) for security bugs. See the [security policy](SECURITY.md) for what to include.
 
 ---
 

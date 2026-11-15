@@ -12,6 +12,8 @@ The [home page](../README.md) shows the short version and the pictures. This pag
 4. Leave **Compress event link** checked. The site uses the shorter of the two link shapes.
 5. Click **Create event link**.
 
+Leave secrets and sensitive information out of event links. Anyone with a public link can read the event details. Public links may appear in hosting logs.
+
 The line under the button confirms the date, the time, the zone, and the offset from UTC. UTC is the shared world clock. `UTC-04:00` means four hours behind it.
 
 If you change the form after that, the old link is cleared. Create a new one before you copy again.
@@ -24,16 +26,16 @@ Password protection is disabled by default because the legal implications of hos
 
 When the site owner has enabled the feature, fill in **Protect with a password** before you create the link. The browser locks the time, the description, and your time zone inside the link. Leave the box blank for a public link.
 
-- Send the password in a different message from the link.
-- Anyone who has the link can try guesses on their own computer. The guesses use the link they already have.
-- A password cannot promise the event will stay private.
-- A password does not prove who sent the link.
+- Password protection reduces casual access. Anyone with the link can try guesses on their own computer.
+- Choose a strong, unique password, such as a long, randomly generated password or passphrase.
+- Send the password through a separate channel. A message that includes both the password and the link or QR code exposes both if someone intercepts or forwards it.
+- Knowing the password gives no assurance about who sent the link. Check the [official addresses](../README.md#official-addresses) before entering a password.
 
 Friends see a box titled **Password protected event**. They type the password and click **Unlock event**. A wrong password, or a link that was edited, shows an error and does not open the event.
 
 Creating and unlocking a protected link needs the browser’s built-in crypto tools. That works on a site served over HTTPS. It also works in a local preview at `127.0.0.1`. This flow is tested in Chromium, Firefox, and WebKit.
 
-A calendar file saved after unlocking is a normal text file. It holds the start time and the description. It does not hold the password or the link.
+Recipients can share unlocked details through copied text, text downloads, calendar files, or printouts. A calendar file is plain text and contains the start time and description. Passwords and source links are left out of the calendar metadata.
 
 ## QR codes
 
@@ -58,7 +60,9 @@ Your time zone appears as **Organizer time** when the link includes a valid zone
 
 The computer’s own time zone setting is enough.
 
-The countdown rounds leftover seconds up. At the exact moment of the event, it changes to **Event has already started.** It refreshes when the tab is visible again. The countdown follows the device clock. A wrong device clock shows a wrong countdown. The moment stored in the link stays fixed.
+The countdown rounds leftover seconds up. At the exact moment of the event, it changes to **Event has already started.** It refreshes when the tab is visible again. The countdown follows the device clock. An inaccurate clock can make the countdown wrong. The moment stored in the link stays fixed.
+
+The timer displays the details supplied by whoever made the link. Confirm important times and unexpected details with the organizer through a contact method you already trust.
 
 ## Save or share the time
 
@@ -75,4 +79,4 @@ The calendar file uses the saved start time. Changing **Display time zone** chan
 
 ## Links remember one moment
 
-A link is a copy of the event at the time you clicked **Create event link**. Editing the event means creating a new link and sending that one. People who still have the old link still see the old time.
+A link is a copy of the event at the time you clicked **Create event link**. If the schedule changes, create and send a replacement link. People who keep the old link still see the old details. The site has no central event record, so organizers cannot revoke previously shared links.
