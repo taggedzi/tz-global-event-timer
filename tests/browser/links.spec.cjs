@@ -1,5 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { readFile } = require('node:fs/promises');
+const { webcrypto } = require('node:crypto');
+const { encodeProtectedEventUrl } = require('../../src/js/event-link');
 const { selectDateTime } = require('./date-time-picker.cjs');
 
 test('event QR code can be downloaded and printed, and is cleared when the link changes', async ({ page }) => {
@@ -77,9 +79,30 @@ test('new and legacy links display safely and invalid links recover', async ({ p
   await expect(page.locator('#formError')).toContainText('Select');
 });
 
-test('password protected links hide the event until unlocked and reject tampering', async ({ page }) => {
+test('the default build omits password controls and rejects protected links', async ({ page, baseURL }) => {
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-password-protection', 'false');
+  await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  const url = await encodeProtectedEventUrl({ date: new Date('2030-01-01T00:00:00Z') }, baseURL, {
+    password: 'test password', crypto: webcrypto
+  });
+  await page.goto(url);
+  await expect(page.locator('#linkError')).toHaveText(/configured with a password.*site owner has disabled password protection/);
+  await expect(page.locator('input[type="password"], #unlockEventForm')).toHaveCount(0);
+  await expect(page.locator('#existingEventTimer')).toBeHidden();
+  await expect(page.locator('#create')).toBeVisible();
+});
+
+test('when enabled, password protected links hide the event until unlocked and reject tampering', async ({ page }) => {
   const description = 'Private demo 🎮 <img src=x onerror=alert(1)>';
   const password = 'plum lantern comet moss';
+  // Exercise the same setting that webpack writes, using the production bundle for both modes.
+  await page.route(url => url.pathname === '/', async route => {
+    const response = await route.fetch();
+    const html = await response.text();
+    const body = html.replace(/\bdata-password-protection=(?:"false"|false)(?=[\s>])/, 'data-password-protection="true"');
+    await route.fulfill({ response, body });
+  });
   await page.goto('/');
   await page.locator('#eventZone').fill('Europe/London');
   await selectDateTime(page, '2030-07-01T20:00');

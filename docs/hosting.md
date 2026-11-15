@@ -30,9 +30,15 @@ Run `npm run dev` and `npm run serve` in two terminals when you want a live prev
 
 Upload **the contents of `dist/`** to the host. Keep `index.html` and the files next to it together.
 
+Password protection for event links is disabled by default because the legal
+implications of hosting it are unclear. Anyone who enables and hosts it takes
+responsibility for doing so. To enable it for your build, set
+`passwordProtectionEnabled` to `true` in [webpack.common.js](../webpack.common.js)
+and rebuild before uploading.
+
 ## Use HTTPS
 
-HTTPS is the padlock in the browser. Password links and the copy buttons need it on a public site. A preview at `127.0.0.1` can do those jobs without a public certificate.
+HTTPS is the padlock in the browser. The copy buttons and password links (when enabled) need it on a public site. A preview at `127.0.0.1` can do those jobs without a public certificate.
 
 Also serve `.js` files as JavaScript and `.svg` files as SVG. If the host guesses the file type wrong, the page can fail to load.
 
@@ -54,7 +60,7 @@ After you upload:
 
 1. Confirm the response headers match the block above.
 2. Create an event link and open it.
-3. Lock a link with a password and unlock it.
+3. If you enabled password protection, lock a link with a password and unlock it.
 4. Copy a link.
 5. Download or print a QR code.
 

@@ -52,6 +52,10 @@ The value is unpadded base64url. Decode it as raw DEFLATE, then as UTF-8. The te
 
 ## A password link
 
+Password protection is disabled by default because the legal implications of
+hosting it are unclear. Anyone who enables and hosts it takes responsibility
+for doing so. Sites with the feature disabled reject protected links.
+
 A protected link stores the locked event in the fragment, after `#p1=`.
 
 ```text

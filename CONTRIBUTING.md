@@ -40,8 +40,13 @@ viewer overrides, countdown boundaries, clipboard failures, and event exports.
 For cross-browser link compatibility, install Firefox and WebKit with
 `npx playwright install firefox webkit`, then run `npm run test:compat` after
 a production build. The link suite checks QR download and printing, public link
-formats, and protected links with correct passwords, wrong passwords, and
-tampered payloads. The preview server's loopback origin supports Web Crypto.
+formats, and rejection of protected links in the default build. It also tests
+the enabled password flow with correct passwords, wrong passwords, and tampered
+payloads. The preview server's loopback origin supports Web Crypto.
+
+Password protection is disabled by default because the legal implications of
+hosting it are unclear. Anyone who enables and hosts it takes responsibility
+for doing so.
 
 ## Accessibility verification
 

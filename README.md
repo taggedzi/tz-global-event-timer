@@ -16,7 +16,7 @@ You can use it for a raid, a meeting, or a get-together. The time travels inside
 [![Stack: JavaScript, HTML, and CSS](https://img.shields.io/badge/stack-JavaScript%20%2F%20HTML%20%2F%20CSS-F7DF1E)](src/)
 [![Development: Node.js 24 or later](https://img.shields.io/badge/development-Node.js%2024%2B-339933)](CONTRIBUTING.md)
 [![Hosting: static site over HTTPS](https://img.shields.io/badge/hosting-static%20HTTPS-2563EB)](docs/hosting.md)
-[![Sharing: QR codes and optional passwords](https://img.shields.io/badge/sharing-QR%20%2B%20optional%20passwords-6D28D9)](#three-ways-to-share)
+[![Sharing: links and QR codes](https://img.shields.io/badge/sharing-links%20%2B%20QR%20codes-6D28D9)](#ways-to-share)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 </p>
@@ -27,7 +27,7 @@ You can use it for a raid, a meeting, or a get-together. The time travels inside
 | Stack | People changing the code | The site is JavaScript, HTML, and CSS |
 | Node.js 24+ | People changing the code | Node.js 24 or newer builds the site. The version in [`.nvmrc`](.nvmrc) is 26.13.1 |
 | Static HTTPS | People putting the site online | Upload the built files to a normal website address that starts with `https://` |
-| QR + passwords | Anyone sharing an event | A link, a scannable code, and an optional password |
+| Links + QR codes | Anyone sharing an event | A shareable link and a scannable code |
 | MIT | Anyone | You can use, change, and share the project. Keep the [license](LICENSE) with your copy |
 
 ---
@@ -98,21 +98,18 @@ If the plan changes, make a new link. Old links keep the old time.
 
 ---
 
-## Three ways to share
+## Ways to share
 
 | Way | Use it when |
 | --- | --- |
 | **Copy link** | You are in chat, email, or Discord |
 | **QR code** | You want a poster, a slide, or a stream overlay |
-| **Password** | You want the time and the note hidden until someone types a password |
-
-<img src="docs/images/password.png" width="800" alt="A card titled Password protected event, with a password box and an Unlock event button.">
-
-Leave the password box empty for a public link. If you fill it in, send the password in a **different message** from the link. Anyone who has the link can try guesses on their own computer. A password cannot promise the event will stay private. If someone guesses it, the site owner is not responsible.
 
 A normal invite fits in a QR code. A very long note might not. Shorten the note, or copy the link instead.
 
-The full steps, limits, and warnings are in [Using the timer](docs/using-the-timer.md).
+Password protection is disabled by default because the legal implications of hosting it are unclear. Anyone who enables and hosts it takes responsibility for doing so.
+
+The full steps and limits are in [Using the timer](docs/using-the-timer.md).
 
 ---
 
@@ -145,7 +142,7 @@ Each guide is for one group. Start with the row that matches you.
 
 | If you want to… | Read this |
 | --- | --- |
-| Create links, use passwords, print QR codes, and save a calendar file | [Using the timer](docs/using-the-timer.md) |
+| Create links, print QR codes, and save a calendar file | [Using the timer](docs/using-the-timer.md) |
 | Put the site on the web, or download a release | [Hosting](docs/hosting.md) |
 | Build a link by hand, or see how a link is stored | [Event links](docs/event-links.md) |
 | Change the code and run the tests | [Contributing](CONTRIBUTING.md) |

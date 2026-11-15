@@ -26,6 +26,9 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             title: 'Global Event Timer',
+            // Controls password protection when creating and opening event links.
+            // Anyone who enables and hosts it takes responsibility for doing so.
+            passwordProtectionEnabled: false,
             contentSecurityPolicy,
             referrerPolicy,
             favicon: path.resolve(__dirname, 'src/event-timer.svg'),

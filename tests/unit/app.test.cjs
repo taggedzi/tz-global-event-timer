@@ -1,6 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { webcrypto } = require('node:crypto');
 const { mount } = require('./helpers.cjs');
+const { encodeProtectedEventUrl } = require('../../src/js/event-link');
 for (const description of ['', 'Game night & friends 🎮\nBring a snack.']) {
   test('creates and opens description ' + JSON.stringify(description), t => {
     const creator = mount(); t.after(creator.close);
@@ -27,4 +29,28 @@ test('opens an already-started legacy event', t => {
   assert.match(viewer.document.getElementById('existingEventHeader').textContent, /already started/);
   assert.equal(viewer.document.getElementById('countdown').style.display, 'none');
   assert.equal(viewer.callbacks.size, 0);
+});
+
+test('rejects a protected link by default, even if it also contains a public event', async t => {
+  const date = new Date('2030-01-01T00:00:00Z');
+  const url = new URL(await encodeProtectedEventUrl({ date }, 'https://example.test/timer/', {
+    password: 'test password', crypto: webcrypto
+  }));
+  const viewer = mount('?date=' + date.toISOString() + url.hash); t.after(viewer.close);
+  assert.match(viewer.document.getElementById('linkError').textContent, /site owner has disabled password protection/);
+  assert.equal(viewer.document.querySelector('input[type="password"]'), null);
+  assert.equal(viewer.document.getElementById('existingEventTime').dataset.instant, undefined);
+  assert.equal(viewer.callbacks.size, 0);
+
+  viewer.select(date);
+  viewer.document.getElementById('create').click();
+  const publicUrl = new URL(viewer.document.getElementById('link').dataset.link);
+  assert.equal(publicUrl.hash, '');
+  assert.ok(publicUrl.search);
+});
+
+test('renders the creator password field when password protection is enabled', t => {
+  const creator = mount('', { passwordProtectionEnabled: true }); t.after(creator.close);
+  assert.equal(creator.document.getElementById('linkPassword').type, 'password');
+  assert.equal(creator.document.getElementById('unlockEventForm'), null);
 });

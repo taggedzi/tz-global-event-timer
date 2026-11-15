@@ -20,12 +20,13 @@ If you change the form after that, the old link is cleared. Create a new one bef
 
 ## Passwords
 
-Fill in **Protect with a password** before you create the link. The browser locks the time, the description, and your time zone inside the link. Leave the box blank for a public link.
+Password protection is disabled by default because the legal implications of hosting it are unclear. Anyone who enables and hosts it takes responsibility for doing so. If you open a protected link on a site with the feature disabled, the site will ask you to get a new link from the organizer.
+
+When the site owner has enabled the feature, fill in **Protect with a password** before you create the link. The browser locks the time, the description, and your time zone inside the link. Leave the box blank for a public link.
 
 - Send the password in a different message from the link.
 - Anyone who has the link can try guesses on their own computer. The guesses use the link they already have.
 - A password cannot promise the event will stay private.
-- If someone guesses the password, the site owner is not responsible.
 - A password does not prove who sent the link.
 
 Friends see a box titled **Password protected event**. They type the password and click **Unlock event**. A wrong password, or a link that was edited, shows an error and does not open the event.
@@ -36,7 +37,7 @@ A calendar file saved after unlocking is a normal text file. It holds the start 
 
 ## QR codes
 
-**Generate QR code** draws a square code for the whole link. Download the PNG or print it. Scanning a protected link opens the same password box.
+**Generate QR code** draws a square code for the whole link. Download the PNG or print it. On sites with password protection enabled, scanning a protected link opens the same password box.
 
 A typical event fits. A very long link may not. About 2,300 characters is a rough guide for a normal event URL. The real limit depends on how the characters are encoded. If the site says the link is too long, keep **Compress event link** checked or shorten the description, then create the link again. You can still share the link itself.
 

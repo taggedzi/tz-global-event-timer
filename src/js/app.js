@@ -16,6 +16,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   setInterval = window.setInterval.bind(window), clearInterval = window.clearInterval.bind(window) }) {
   activeApps.get(window)?.destroy();
   const { document, navigator, location } = window;
+  const passwordProtectionEnabled = document.documentElement.dataset.passwordProtection === 'true';
   const listeners = [];
   let disposeCountdown;
   let copyController;
@@ -27,24 +28,20 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     listeners.push(() => target.removeEventListener(type, handler, options));
   }
   const el = id => document.getElementById(id);
+  function mountTemplate(id) {
+    const template = el(id);
+    const content = template.content.firstElementChild.cloneNode(true);
+    template.after(content);
+    return content;
+  }
   const dateTimeTrigger = el('eventDateTimeTrigger');
   const closeDateTimePicker = initializeDateTimePicker({ document, locale: navigator.language, getNow, listen });
   const initialHash = location.hash;
   const protectedLink = isProtectedEventLink(initialHash);
-  const linkPassword = el('linkPassword');
+  const passwordField = passwordProtectionEnabled ? mountTemplate('linkPasswordTemplate') : null;
+  const linkPassword = passwordField?.querySelector('#linkPassword');
+  let unlockForm;
   const createButton = el('create');
-  const unlockForm = el('unlockEventForm');
-  const unlockPassword = el('unlockPassword');
-  const unlockButton = el('unlockEventButton');
-  linkPassword.value = '';
-  el('linkPasswordField').hidden = false;
-  unlockForm.hidden = true;
-  unlockPassword.value = '';
-  unlockPassword.readOnly = false;
-  unlockPassword.removeAttribute('aria-invalid');
-  el('unlockError').textContent = '';
-  unlockButton.disabled = false;
-  unlockButton.textContent = 'Unlock event';
   el('existingEventTimer').style.removeProperty('display');
   for (const id of ['eventDesc', 'existingEventTime', 'originEventTime', 'eventPrintText']) el(id).textContent = '';
   delete el('existingEventTime').dataset.instant;
@@ -107,10 +104,12 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
   });
   listen(el('compressLink'), 'change', clearShareLink);
   listen(el('occurrence'), 'change', clearShareLink);
-  listen(linkPassword, 'input', () => {
-    clearShareLink();
-    el('formError').textContent = '';
-  });
+  if (linkPassword) {
+    listen(linkPassword, 'input', () => {
+      clearShareLink();
+      el('formError').textContent = '';
+    });
+  }
   invalidateCreation();
   updateDescriptionUsage();
 
@@ -173,7 +172,7 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       date: choice.date, description: description.value, zone: el('eventZone').value
     };
     const compress = el('compressLink').checked;
-    const password = linkPassword.value;
+    const password = linkPassword?.value;
     const revision = shareRevision;
     let url;
     try {
@@ -346,13 +345,17 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
       event.preventDefault();
       el('main').focus();
     });
-    const payload = readProtectedEventLink(initialHash);
-    if (!payload) {
+    const payload = passwordProtectionEnabled ? readProtectedEventLink(initialHash) : null;
+    if (!passwordProtectionEnabled) {
+      el('linkError').textContent = 'This event was configured with a password. The site owner has disabled password protection. Ask the organizer for a new link.';
+    } else if (!payload) {
       el('linkError').textContent = 'This password protected link is invalid. Ask the organizer for a new link.';
     } else if (!window.crypto?.subtle) {
       el('linkError').textContent = CRYPTO_UNAVAILABLE;
     } else {
-      unlockForm.hidden = false;
+      unlockForm = mountTemplate('unlockEventTemplate');
+      const unlockPassword = el('unlockPassword');
+      const unlockButton = el('unlockEventButton');
       listen(unlockPassword, 'input', () => {
         unlockPassword.removeAttribute('aria-invalid');
         el('unlockError').textContent = '';
@@ -400,6 +403,8 @@ function initializeApp({ window, intl = window.Intl, now: getNow = () => Date.no
     eventCopyController?.destroy();
     clearEventPrintMode();
     for (const remove of listeners) remove();
+    passwordField?.remove();
+    unlockForm?.remove();
     closeDateTimePicker();
     if (activeApps.get(window) === app) activeApps.delete(window);
   } };

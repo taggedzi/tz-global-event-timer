@@ -2,8 +2,11 @@ const { readFileSync } = require('node:fs');
 const { JSDOM } = require('jsdom');
 const { initializeApp } = require('../../src/js/app');
 process.env.TZ = 'UTC';
-function mount(query = '', options = {}) {
+function mount(query = '', { passwordProtectionEnabled, ...options } = {}) {
   const dom = new JSDOM(readFileSync('src/index.html', 'utf8'), { url: 'https://example.test/timer/' + query });
+  if (passwordProtectionEnabled !== undefined) {
+    dom.window.document.documentElement.dataset.passwordProtection = String(passwordProtectionEnabled);
+  }
   const callbacks = new Map();
   const errors = [];
   let nextId = 0;

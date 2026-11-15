@@ -31,6 +31,8 @@ When a fix happens, it lands on `main` and in a later release. Older releases ar
 
 ## What this covers
 
-This is a static site. The event time travels inside the link. An optional password hides the time and the note until someone types it. Anyone with the link can try guesses on their own computer. A password is not a promise that the event stays private.
+This is a static site. The event time travels inside the link. Password protection is disabled by default because the legal implications of hosting it are unclear. Anyone who enables and hosts it takes responsibility for doing so.
+
+When enabled, a password hides the time and the note until someone types it. Anyone with the link can try guesses on their own computer. A weak or reused password can expose the event details.
 
 Problems in the site, the link format, or the release files are in scope. A problem that exists only in a host this project does not control, or only in the browser itself, is usually outside what this repository can change.

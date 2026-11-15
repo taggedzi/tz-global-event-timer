@@ -14,6 +14,10 @@ files, invitations, and calendar subscriptions are outside the scope.
 
 ## Viewer behavior
 
+Password protection is disabled by default because the legal implications of
+hosting it are unclear. Anyone who enables and hosts it takes responsibility
+for doing so.
+
 - Add a **Download calendar file (.ics)** button next to **Download text** in
   the event actions. Make it available for valid public links and for protected
   links after successful unlock, including events whose start time has passed.
