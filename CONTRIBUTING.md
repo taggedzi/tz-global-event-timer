@@ -2,6 +2,8 @@
 
 For people changing the code. The tour of the product is the [README](README.md).
 
+See [AI use](README.md#ai-use) for how AI tools helped build and document the project.
+
 Be kind. The [code of conduct](CODE_OF_CONDUCT.md) is short. A reply is not promised.
 
 Security problems stay private. Follow the [security policy](SECURITY.md). Do not open a public issue for them.

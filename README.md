@@ -32,6 +32,13 @@ You can use it for a raid, a meeting, or a get-together. The time travels inside
 
 ---
 
+## AI use
+
+AI tools assisted with development and documentation for this project. The
+timer runs in your browser without calling AI services.
+
+---
+
 ## How a link works
 
 ```mermaid
